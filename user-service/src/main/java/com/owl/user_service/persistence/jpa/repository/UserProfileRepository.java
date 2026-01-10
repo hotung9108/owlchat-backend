@@ -1,0 +1,40 @@
+package com.owl.user_service.persistence.jpa.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.owl.user_service.persistence.jpa.entity.UserProfile;
+
+import java.util.List;
+
+public interface UserProfileRepository extends JpaRepository<UserProfile, String> {
+    // save(userProfile)
+    // findById(id)
+    // findAll()
+    // deleteById(id)
+    // existsById(id)
+    // count()
+    
+    // findByNameContainKeyword
+    public List<UserProfile> findByNameContainingIgnoreCase(String keyword);
+
+    //findByGender
+    public List<UserProfile> findByGender(Boolean gender);
+
+    //findByDateOfBirth
+    public List<UserProfile> findByDateOfBirth(java.time.LocalDate dateOfBirth);
+
+    //findByDateOfBirthBetween
+    public List<UserProfile> findByDateOfBirthBetween(java.time.LocalDate startDate, java.time.LocalDate endDate);
+    
+    //findByEmail
+    public List<UserProfile> findByEmail(String email);
+
+    //findByEmailContainingIgnoreCase
+    public List<UserProfile> findByEmailContainingIgnoreCase(String emailKeyword);
+
+    //findByPhoneNumber
+    public List<UserProfile> findByPhoneNumber(String phoneNumber);
+
+    //findByPhoneNumberContainingIgnoreCase
+    public List<UserProfile> findByPhoneNumberContainingIgnoreCase(String phoneNumberKeyword);
+}
