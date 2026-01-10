@@ -6,7 +6,7 @@ import com.owl.user_service.persistence.jpa.entity.UserProfile;
 
 import java.util.List;
 
-public interface UserProfileRepository extends JpaRepository<UserProfile, String> {
+public interface UserProfileJpaRepository extends JpaRepository<UserProfile, String> {
     // save(userProfile)
     // findById(id)
     // findAll()
