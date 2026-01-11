@@ -19,9 +19,16 @@ public class AccountController {
     }
 
     @GetMapping("")
-    public ResponseEntity getAccounts(@RequestParam(required = false, defaultValue = "") String keywords, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "10") int size, @RequestParam(required =  false, defaultValue = "0") int status) {
+    public ResponseEntity getAccounts(
+        @RequestParam(required = false, defaultValue = "") String keywords, 
+        @RequestParam(required = false, defaultValue = "0") int page, 
+        @RequestParam(required = false, defaultValue = "10") int size, 
+        @RequestParam(required =  false, defaultValue = "0") int status,
+        @RequestParam(required = false, defaultValue = "true") boolean ascSort
+    ) 
+    {
         try {
-            return ResponseEntity.ok(getAccountServices.getAccounts(keywords, page, size, status));
+            return ResponseEntity.ok(getAccountServices.getAccounts(keywords, page, size, status, ascSort));
         }
         catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());

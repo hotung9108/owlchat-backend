@@ -1,7 +1,6 @@
 package com.owl.user_service.persistence.jpa.specification;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

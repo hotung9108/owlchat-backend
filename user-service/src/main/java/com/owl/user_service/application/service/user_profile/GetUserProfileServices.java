@@ -1,7 +1,6 @@
 package com.owl.user_service.application.service.user_profile;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
