@@ -2,7 +2,6 @@ package com.owl.user_service.persistence.jpa.entity;
 
 import jakarta.persistence.*;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 

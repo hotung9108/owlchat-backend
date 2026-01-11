@@ -7,6 +7,9 @@ import com.owl.user_service.persistence.jpa.entity.Account;
 import com.owl.user_service.persistence.jpa.repository.AccountJpaRepository;
 import com.owl.user_service.presentation.dto.request.AccountRequest;
 
+import jakarta.transaction.Transactional;
+
+@Transactional
 @Service
 public class ControlAccountServices {
     private final AccountServices accountServices;

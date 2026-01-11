@@ -10,8 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 import com.owl.user_service.persistence.jpa.entity.Account;
 
-import jakarta.transaction.Transactional;
-
 public interface AccountJpaRepository extends JpaRepository<Account, String>, JpaSpecificationExecutor<Account>
 {
     // save(account)

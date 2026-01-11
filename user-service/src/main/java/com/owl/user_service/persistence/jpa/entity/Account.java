@@ -1,6 +1,5 @@
 package com.owl.user_service.persistence.jpa.entity;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;

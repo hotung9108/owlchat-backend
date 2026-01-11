@@ -1,6 +1,5 @@
 package com.owl.user_service.application.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
