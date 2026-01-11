@@ -13,18 +13,20 @@ public class AccountSpecifications {
 
     public static Specification<Account> findAccountSpecification(List<String> keywords, int status) {
         return (root, query, cb) -> {
-            if (keywords == null || keywords.isEmpty()) {
-                return cb.conjunction(); // no filtering
-            }
-
             query.distinct(true); // remove duplicates
 
             List<Predicate> predicates = new ArrayList<>();
 
-            for (String kw : keywords) {
-                String pattern = "%" + kw.toLowerCase() + "%";
-                predicates.add(cb.like(cb.lower(root.get("id")), pattern));
-                predicates.add(cb.like(cb.lower(root.get("username")), pattern));
+            if (keywords == null || keywords.isEmpty()) {
+                
+            }
+            else {
+
+                for (String kw : keywords) {
+                    String pattern = "%" + kw.toLowerCase() + "%";
+                    predicates.add(cb.like(cb.lower(root.get("id")), pattern));
+                    predicates.add(cb.like(cb.lower(root.get("username")), pattern));
+                }
             }
 
             if (status == 1) {

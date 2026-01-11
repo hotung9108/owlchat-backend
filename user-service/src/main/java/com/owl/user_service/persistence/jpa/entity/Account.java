@@ -4,10 +4,12 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "account")
 public class Account {
 
@@ -56,6 +58,13 @@ public class Account {
 
     public String getPassword() {
         return password;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+    public LocalDateTime getUpdatedDate() {
+        return updatedDate;
     }
 }
 

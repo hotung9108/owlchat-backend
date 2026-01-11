@@ -7,8 +7,10 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_profile")
 public class UserProfile {
 
@@ -43,7 +45,7 @@ public class UserProfile {
     private String phoneNumber;
 
     @CreatedDate
-    @Column(name = "created_date", nullable = false, updatable = false)
+    @Column(name = "created_date", nullable = true, updatable = false)
     private LocalDateTime createdDate;
 
     @LastModifiedDate
@@ -98,6 +100,14 @@ public class UserProfile {
 
     public String getPhoneNumber() {
         return phoneNumber;
+    }
+    
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public LocalDateTime getUpdatedDate() {
+        return updatedDate;
     }
 }
 

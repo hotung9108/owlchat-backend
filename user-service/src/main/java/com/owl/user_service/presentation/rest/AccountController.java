@@ -3,8 +3,8 @@ package com.owl.user_service.presentation.rest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.owl.user_service.application.service.ControlAccountServices;
-import com.owl.user_service.application.service.GetAccountServices;
+import com.owl.user_service.application.service.account.ControlAccountServices;
+import com.owl.user_service.application.service.account.GetAccountServices;
 import com.owl.user_service.presentation.dto.request.AccountRequest;
 
 @RestController

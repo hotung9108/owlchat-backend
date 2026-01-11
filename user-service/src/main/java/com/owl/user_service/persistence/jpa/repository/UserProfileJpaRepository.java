@@ -1,12 +1,13 @@
 package com.owl.user_service.persistence.jpa.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.owl.user_service.persistence.jpa.entity.UserProfile;
 
 import java.util.List;
 
-public interface UserProfileJpaRepository extends JpaRepository<UserProfile, String> {
+public interface UserProfileJpaRepository extends JpaRepository<UserProfile, String>, JpaSpecificationExecutor<UserProfile> {
     // save(userProfile)
     // findById(id)
     // findAll()

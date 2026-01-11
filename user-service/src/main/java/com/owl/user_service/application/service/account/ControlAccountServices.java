@@ -1,4 +1,4 @@
-package com.owl.user_service.application.service;
+package com.owl.user_service.application.service.account;
 
 import org.springframework.stereotype.Service;
 
@@ -60,6 +60,8 @@ public class ControlAccountServices {
         }
 
         Account account = accountRepository.findById(id).orElse(null);
+
+        accountRepository.updateUpdatedDateById(id);
 
         return accountRepository.save(new Account(id, status, account.getUsername(), account.getPassword()));
     }

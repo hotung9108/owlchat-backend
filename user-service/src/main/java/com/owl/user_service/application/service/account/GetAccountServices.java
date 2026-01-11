@@ -1,4 +1,4 @@
-package com.owl.user_service.application.service;
+package com.owl.user_service.application.service.account;
 
 import java.util.List;
 
@@ -50,9 +50,7 @@ public class GetAccountServices {
         }
 
         List<String> keywordList = KeywordUtils.parseKeywords(keywords);
-        return accountRepository
-                .findAll(AccountSpecifications.findAccountSpecification(keywordList, status), pageable)
-                .getContent();
+        return accountRepository.findAll(AccountSpecifications.findAccountSpecification(keywordList, status), pageable).getContent();
     }
 
     public Account getAccountById(String id) {
