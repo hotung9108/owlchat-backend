@@ -30,7 +30,7 @@ public class AccountController {
         try {
             return ResponseEntity.ok(getAccountServices.getAccounts(keywords, page, size, status, ascSort));
         }
-        catch (IllegalArgumentException ex) {
+        catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -40,7 +40,7 @@ public class AccountController {
         try {
             return ResponseEntity.ok(getAccountServices.getAccountById(id));
         }
-        catch (IllegalArgumentException ex) {
+        catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -50,7 +50,7 @@ public class AccountController {
         try {
             return ResponseEntity.ok(controlAccountServices.addAccount(newAccountRequest));
         }
-        catch (IllegalArgumentException ex) {
+        catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -60,7 +60,7 @@ public class AccountController {
         try {
             return ResponseEntity.ok(controlAccountServices.updateAccount(id, accountRequest));
         }
-        catch (IllegalArgumentException ex) {
+        catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -69,7 +69,7 @@ public class AccountController {
     public ResponseEntity updateAccountStatus(@PathVariable String id, @PathVariable boolean status) {
         try {
             return ResponseEntity.ok(controlAccountServices.updateAccountStatus(id, status));
-        } catch (IllegalArgumentException ex) {
+        } catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -80,7 +80,7 @@ public class AccountController {
             controlAccountServices.deleteAccount(id);
             return ResponseEntity.ok("Account with id " + id + " has been deleted successfully");
         }
-        catch (IllegalArgumentException ex) {
+        catch (Exception ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }

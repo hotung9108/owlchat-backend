@@ -9,7 +9,6 @@ import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,7 +47,7 @@ public class UserProfileController {
         {
             return ResponseEntity.ok(getUserProfileService.getUserProfiles(keywords, page, size, gender, dateOfBirthStart, dateOfBirthEnd, ascSort));    
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -70,7 +69,7 @@ public class UserProfileController {
         {
             return ResponseEntity.ok(controlUserProfileServices.addUserProfile(userProfileCreateRequest));    
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -80,24 +79,29 @@ public class UserProfileController {
         try {
             return ResponseEntity.ok(controlUserProfileServices.updateUserProfile(id, userProfileRequest));
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PatchMapping("path/{id}")
-    public String updateAvatar(@PathVariable String id, @RequestBody String entity) {
-        return entity;
+    @PatchMapping("/{id}/avatar")
+    public ResponseEntity updateAvatar(@PathVariable String id, @RequestBody String avatar) {
+        try {
+            return ResponseEntity.ok(controlUserProfileServices.updateAvataUserProfile(id, avatar));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteProfile(@PathVariable String id) {
+    public ResponseEntity<String> deleteProfile(@PathVariable String id) {
         try 
         {
             controlUserProfileServices.deleteUserProfile(id);
             return ResponseEntity.ok("User profile deleted successfully");  
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
