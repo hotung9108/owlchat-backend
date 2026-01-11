@@ -2,6 +2,8 @@ package com.owl.user_service.persistence.jpa.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import com.owl.user_service.persistence.jpa.entity.UserProfile;
 
@@ -38,4 +40,14 @@ public interface UserProfileJpaRepository extends JpaRepository<UserProfile, Str
 
     //findByPhoneNumberContainingIgnoreCase
     public List<UserProfile> findByPhoneNumberContainingIgnoreCase(String phoneNumberKeyword);
+
+    //updateAvatarById
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE UserProfile a SET a.avatar = :avatar WHERE a.id = :id") 
+    public UserProfile updateAvatarById(String id, String avatar);
+
+    //updateUpdatedDateById
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE UserProfile a SET a.updatedDate = CURRENT_TIMESTAMP WHERE a.id = :id")
+    public void updateUpdatedDateById(String id);
 }

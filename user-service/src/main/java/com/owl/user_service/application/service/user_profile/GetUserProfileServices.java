@@ -1,10 +1,12 @@
 package com.owl.user_service.application.service.user_profile;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.owl.user_service.domain.service.AccountServices;
@@ -14,16 +16,16 @@ import com.owl.user_service.persistence.jpa.repository.UserProfileJpaRepository;
 import com.owl.user_service.persistence.jpa.specification.UserProfileSpecification;
 
 @Service
-public class GetUserProfileService {
+public class GetUserProfileServices {
     private final UserProfileJpaRepository userProfileRepository;
     private final AccountServices accountServices;
 
-    public GetUserProfileService(UserProfileJpaRepository _userProfileRepository) {
+    public GetUserProfileServices(UserProfileJpaRepository _userProfileRepository) {
         this.userProfileRepository = _userProfileRepository;
         accountServices = new AccountServices();
     }
 
-    public List<UserProfile> getUserProfiles(String keywords, int page, int size, int gender, LocalDateTime dateOfBirthStart, LocalDateTime dateOfBirthEnd, boolean ascSort) {
+    public List<UserProfile> getUserProfiles(String keywords, int page, int size, int gender, LocalDate dateOfBirthStart, LocalDate dateOfBirthEnd, boolean ascSort) {
         if (page < -1 || size <= 0) {
             throw new IllegalArgumentException(
                 "Page must be -1 or greater, and size must be greater than 0"
@@ -32,16 +34,12 @@ public class GetUserProfileService {
         
         // no pagination
         if (page == -1) {
-            if (keywords == null || keywords.isBlank()) {
-                return userProfileRepository.findAll();
-            }
-
             List<String> keywordList = KeywordUtils.parseKeywords(keywords);
-            return userProfileRepository.findAll(UserProfileSpecification.findUserProfileSpecification(keywordList, gender, dateOfBirthStart, dateOfBirthEnd, ascSort));
+            return userProfileRepository.findAll(UserProfileSpecification.findUserProfileSpecification(keywordList, gender, dateOfBirthStart, dateOfBirthEnd, ascSort), Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "id"));
         }
 
         // pagination
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "id");
 
         if (keywords == null || keywords.isBlank()) {
             return userProfileRepository.findAll(pageable).getContent();

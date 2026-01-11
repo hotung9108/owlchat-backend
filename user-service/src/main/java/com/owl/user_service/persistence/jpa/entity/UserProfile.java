@@ -9,6 +9,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_profile")
@@ -21,9 +23,10 @@ public class UserProfile {
     @Column(nullable = false)
     private String id;
 
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "id")
+    @JsonIgnore
     private Account account;
 
     @Column(nullable = false)
@@ -35,10 +38,10 @@ public class UserProfile {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(nullable = false)
+    @Column
     private String avatar;
 
-    @Column
+    @Column(nullable = false)
     private String email;
 
     @Column(name = "phone_number", nullable = false)

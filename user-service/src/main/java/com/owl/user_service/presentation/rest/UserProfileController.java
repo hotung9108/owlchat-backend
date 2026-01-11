@@ -3,25 +3,34 @@ package com.owl.user_service.presentation.rest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.owl.user_service.application.service.user_profile.GetUserProfileService;
+import com.owl.user_service.application.service.user_profile.ControlUserProfileServices;
+import com.owl.user_service.application.service.user_profile.GetUserProfileServices;
+import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
+import com.owl.user_service.presentation.dto.request.UserProfileRequest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+
 
 @RestController
 @RequestMapping("/profile")
 public class UserProfileController {
-    private final GetUserProfileService getUserProfileService;
+    private final GetUserProfileServices getUserProfileService;
+    private final ControlUserProfileServices controlUserProfileServices;
 
-    public UserProfileController(GetUserProfileService getUserProfileService) {
+    public UserProfileController(GetUserProfileServices getUserProfileService, ControlUserProfileServices controlUserProfileServices) {
         this.getUserProfileService = getUserProfileService;
+        this.controlUserProfileServices = controlUserProfileServices;
     }
 
     @GetMapping("")
@@ -30,8 +39,8 @@ public class UserProfileController {
         @RequestParam(required = false, defaultValue = "0") int page, 
         @RequestParam(required = false, defaultValue = "10") int size, 
         @RequestParam(required =  false, defaultValue = "0") int gender, 
-        @RequestParam(required =  false, defaultValue = "") LocalDateTime dateOfBirthStart, 
-        @RequestParam(required =  false, defaultValue = "") LocalDateTime dateOfBirthEnd, 
+        @RequestParam(required =  false, defaultValue = "") LocalDate dateOfBirthStart, 
+        @RequestParam(required =  false, defaultValue = "") LocalDate dateOfBirthEnd, 
         @RequestParam(required =  false, defaultValue = "true") boolean ascSort
     ) 
     {
@@ -54,14 +63,42 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("")
+    public ResponseEntity addNewProfile(@RequestBody UserProfileCreateRequest userProfileCreateRequest) {
+        try 
+        {
+            return ResponseEntity.ok(controlUserProfileServices.addUserProfile(userProfileCreateRequest));    
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     
     @PutMapping("/{id}")
-    public String updateProfile(@PathVariable String id, @RequestBody String entity) {
-        return entity;
+    public ResponseEntity updateProfile(@PathVariable String id, @RequestBody UserProfileRequest userProfileRequest) {
+        try {
+            return ResponseEntity.ok(controlUserProfileServices.updateUserProfile(id, userProfileRequest));
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PatchMapping("path/{id}")
     public String updateAvatar(@PathVariable String id, @RequestBody String entity) {
         return entity;
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteProfile(@PathVariable String id) {
+        try 
+        {
+            controlUserProfileServices.deleteUserProfile(id);
+            return ResponseEntity.ok("User profile deleted successfully");  
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

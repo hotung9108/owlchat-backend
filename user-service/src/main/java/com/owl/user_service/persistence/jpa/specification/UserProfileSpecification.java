@@ -1,5 +1,6 @@
 package com.owl.user_service.persistence.jpa.specification;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import com.owl.user_service.persistence.jpa.entity.UserProfile;
 import jakarta.persistence.criteria.Predicate;
 
 public class UserProfileSpecification {
-    public static Specification<UserProfile> findUserProfileSpecification(java.util.List<String> keywords, int gender,  LocalDateTime dateOfBirthStart, LocalDateTime dateOfBirthEnd, boolean ascSort) {
+    public static Specification<UserProfile> findUserProfileSpecification(java.util.List<String> keywords, int gender,  LocalDate dateOfBirthStart, LocalDate dateOfBirthEnd, boolean ascSort) {
         return (root, query, cb) -> {
             query.distinct(true); // remove duplicates
 
@@ -21,13 +22,15 @@ public class UserProfileSpecification {
                 
             }
             else {
-
+                List<Predicate> keywordsPredicates = new ArrayList<>();
                 for (String kw : keywords) {
                     String pattern = "%" + kw.toLowerCase() + "%";
-                    predicates.add(cb.like(cb.lower(root.get("name")), pattern));
-                    predicates.add(cb.like(cb.lower(root.get("email")), pattern));
-                    predicates.add(cb.like(cb.lower(root.get("phoneNumber")), pattern));
+                    keywordsPredicates.add(cb.like(cb.lower(root.get("name")), pattern));
+                    keywordsPredicates.add(cb.like(cb.lower(root.get("email")), pattern));
+                    keywordsPredicates.add(cb.like(cb.lower(root.get("phoneNumber")), pattern));
                 }
+
+                predicates.add(cb.or(keywordsPredicates.toArray(new Predicate[0])));
             }
 
             if (gender == 1) {
@@ -38,11 +41,11 @@ public class UserProfileSpecification {
             }
 
             if (dateOfBirthStart != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("dateOfBirth"), dateOfBirthStart.toLocalDate()));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("dateOfBirth"), dateOfBirthStart));
             }
             
             if (dateOfBirthEnd != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("dateOfBirth"), dateOfBirthEnd.toLocalDate()));
+                predicates.add(cb.lessThanOrEqualTo(root.get("dateOfBirth"), dateOfBirthEnd));
             }
 
             if (ascSort) {
@@ -53,7 +56,7 @@ public class UserProfileSpecification {
             }
 
             // combine all predicates with OR
-            return cb.or(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
 }
