@@ -80,6 +80,18 @@ public class AccountServices {
         return true;
     }
     
+    public boolean ValidateRole(String role) {
+        if (role == null || role.isBlank()) {
+            return false;
+        }
+
+        if (!role.equals("USER") && !role.equals("ADMIN")) {
+            return false;
+        }
+
+        return true;
+    }
+
     public Account CreateNewAccount(String lastID, AccountRequest accountRequest) {
         if (!ValidateUsername(accountRequest.getUsername())) {
             throw new IllegalArgumentException("Username is invalid");
@@ -89,7 +101,11 @@ public class AccountServices {
             throw new IllegalArgumentException("Password is invalid");
         }
 
-        Account newAccount = new Account(GenerateNewID(lastID), true, accountRequest.getUsername(), accountRequest.getPassword());
+        if (!ValidateRole(accountRequest.getRole())) {
+            throw new IllegalArgumentException("Role is invalid");
+        }
+
+        Account newAccount = new Account(GenerateNewID(lastID), true, Account.AccountRole.valueOf(accountRequest.getRole()), accountRequest.getUsername(), accountRequest.getPassword());
 
         return newAccount;
     }

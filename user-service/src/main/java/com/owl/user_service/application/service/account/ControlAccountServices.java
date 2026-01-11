@@ -47,7 +47,11 @@ public class ControlAccountServices {
             throw new IllegalArgumentException("Password is invalid");
         }
 
-        return accountRepository.save(new Account(id, true, accountRequest.getUsername(), accountRequest.getPassword()));
+        if (!accountServices.ValidateRole(accountRequest.getRole())) {
+            throw new IllegalArgumentException("Role is invalid");
+        }
+
+        return accountRepository.save(new Account(id, true, Account.AccountRole.valueOf(accountRequest.getRole()), accountRequest.getUsername(), accountRequest.getPassword()));
     }
 
     public Account updateAccountStatus(String id, boolean status) {
@@ -63,7 +67,7 @@ public class ControlAccountServices {
 
         accountRepository.updateUpdatedDateById(id);
 
-        return accountRepository.save(new Account(id, status, account.getUsername(), account.getPassword()));
+        return accountRepository.save(new Account(id, status, account.getRole(), account.getUsername(), account.getPassword()));
     }
 
     public void deleteAccount(String id) {

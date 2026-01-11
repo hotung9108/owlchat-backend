@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_profile")
-public class UserProfile {
+public class UserProfile extends EntityBase<UserProfile> {
 
     protected UserProfile() {
     }

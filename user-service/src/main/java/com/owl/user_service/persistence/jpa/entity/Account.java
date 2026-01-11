@@ -11,7 +11,7 @@ import jakarta.persistence.*;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "account")
-public class Account {
+public class Account extends EntityBase<Account> {
 
     protected Account() {
     }
@@ -22,6 +22,15 @@ public class Account {
 
     @Column
     private Boolean status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountRole role;
+
+    public enum AccountRole {
+        ADMIN,
+        USER
+    }
 
     @Column(nullable = false)
     private String username;
@@ -37,9 +46,10 @@ public class Account {
     @Column(name = "updated_date", nullable = true)
     private LocalDateTime updatedDate;
 
-    public Account(String id, Boolean status, String username, String password) {
+    public Account(String id, Boolean status, AccountRole role, String username, String password) {
         this.id = id;
         this.status = status;
+        this.role = role;
         this.username = username;
         this.password = password;
     }
@@ -66,5 +76,7 @@ public class Account {
     public LocalDateTime getUpdatedDate() {
         return updatedDate;
     }
+    public AccountRole getRole() {
+        return role;
+    }
 }
-
