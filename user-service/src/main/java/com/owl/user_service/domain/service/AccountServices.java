@@ -32,7 +32,7 @@ public class AccountServices {
         return AccountServicesConfig.PREFIX + String.format("%0" + AccountServicesConfig.NUM_LENGTH + "d", number);
     }
 
-    private boolean ValidateID(String id) {
+    public boolean ValidateID(String id) {
         if (id == null || id.isBlank()) {
             return false;
         }
@@ -59,7 +59,7 @@ public class AccountServices {
         return true;
     }
 
-    private boolean ValidatePassword(String password) {
+    public boolean ValidatePassword(String password) {
         if (password == null || password.isBlank()) {
             return false;
         }
@@ -72,43 +72,24 @@ public class AccountServices {
         }
     }
 
-    private boolean ValidateNewAccount(Account account) {
-        if (account == null) {
-            return false;
-        }
-
-        if (account.getId() == null || account.getId().isBlank()) {
-            return false;
-        }
-
-        if (!ValidateID(account.getId())) {
-            return false;
-        }
-
-        if (account.getUsername() == null || account.getUsername().isBlank()) {
-            return false;
-        }
-
-        if (account.getPassword() == null || account.getPassword().isBlank()) {
-            return false;
-        }
-
-        if (!ValidatePassword(account.getPassword())) {
-            return false;
-        }
-
-        if (account.getUsername() == account.getPassword()) {
+    public boolean ValidateUsername(String username) {
+        if (username == null || username.isBlank()) {
             return false;
         }
 
         return true;
     }
-
+    
     public Account CreateNewAccount(String lastID, AccountRequest accountRequest) {
+        if (!ValidateUsername(accountRequest.getUsername())) {
+            throw new IllegalArgumentException("Username is invalid");
+        }
+
+        if (!ValidatePassword(accountRequest.getPassword())) {
+            throw new IllegalArgumentException("Password is invalid");
+        }
+
         Account newAccount = new Account(GenerateNewID(lastID), true, accountRequest.getUsername(), accountRequest.getPassword());
-        
-        if (!ValidateNewAccount(newAccount)) 
-            throw new IllegalArgumentException("Invalid account data");
 
         return newAccount;
     }

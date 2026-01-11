@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -44,11 +45,11 @@ public class UserProfile {
 
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
-    private Instant createdDate;
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
     @Column(name = "updated_date", nullable = true)
-    private Instant updatedDate;
+    private LocalDateTime updatedDate;
 
     public UserProfile(
             Account account,

@@ -1,6 +1,7 @@
 package com.owl.user_service.persistence.jpa.entity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -28,12 +29,12 @@ public class Account {
     private String password;
 
     @CreatedDate
-    @Column(name = "created_date", nullable = false, updatable = false)
-    private Instant createdDate;
+    @Column(name = "created_date", nullable = true, updatable = false)
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
     @Column(name = "updated_date", nullable = true)
-    private Instant updatedDate;
+    private LocalDateTime updatedDate;
 
     public Account(String id, Boolean status, String username, String password) {
         this.id = id;

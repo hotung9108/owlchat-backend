@@ -11,7 +11,7 @@ import jakarta.persistence.criteria.Predicate;
 
 public class AccountSpecifications {
 
-    public static Specification<Account> containsKeywords(List<String> keywords) {
+    public static Specification<Account> findAccountSpecification(List<String> keywords, int status) {
         return (root, query, cb) -> {
             if (keywords == null || keywords.isEmpty()) {
                 return cb.conjunction(); // no filtering
@@ -25,6 +25,12 @@ public class AccountSpecifications {
                 String pattern = "%" + kw.toLowerCase() + "%";
                 predicates.add(cb.like(cb.lower(root.get("id")), pattern));
                 predicates.add(cb.like(cb.lower(root.get("username")), pattern));
+            }
+
+            if (status == 1) {
+                predicates.add(cb.isTrue(root.get("status")));
+            } else if (status == -1) {
+                predicates.add(cb.isFalse(root.get("status")));
             }
 
             // combine all predicates with OR

@@ -17,25 +17,59 @@ public class ControlAccountServices {
         accountServices = new AccountServices();
     }
 
-    public Account addAccount(AccountRequest account) {
+    public Account addAccount(AccountRequest accountRequest) {
         try {
-            Account lastAccount = accountRepository.findFirstByOrderByIdDesc();
-            return accountRepository.save(accountServices.CreateNewAccount(lastAccount != null ? lastAccount.getId() : null, account));
+            Account lastAccount = accountRepository.count() == 0 ? null : accountRepository.findFirstByOrderByIdDesc();
+            return accountRepository.save(accountServices.CreateNewAccount(lastAccount != null ? lastAccount.getId() : null, accountRequest));
         }
         catch (IllegalArgumentException ex) {
             throw ex;
         }
     }
 
-    public Account updateAccount(Account account) {
-        return accountRepository.save(account);
+    public Account updateAccount(String id, AccountRequest accountRequest) {
+        if (!accountServices.ValidateID(id)) {
+            throw new IllegalArgumentException("Id is invalid: " + id);
+        }
+
+        if (accountRepository.findById(id).isEmpty()) {
+            throw new IllegalArgumentException("Account with id " + id + " does not exist");
+        }
+
+        if (!accountServices.ValidateUsername(accountRequest.getUsername())) {
+            throw new IllegalArgumentException("Username is invalid");
+        }
+
+        if (!accountServices.ValidatePassword(accountRequest.getPassword())) {
+            throw new IllegalArgumentException("Password is invalid");
+        }
+
+        return accountRepository.save(new Account(id, true, accountRequest.getUsername(), accountRequest.getPassword()));
     }
 
-    public Account updateAccountStatus(String id, String status) {
-        return null;
+    public Account updateAccountStatus(String id, boolean status) {
+        if (!accountServices.ValidateID(id)) {
+            throw new IllegalArgumentException("Id is invalid: " + id);
+        }
+
+        if (accountRepository.findById(id).isEmpty()) {
+            throw new IllegalArgumentException("Account with id " + id + " does not exist");
+        }
+
+        Account account = accountRepository.findById(id).orElse(null);
+
+        return accountRepository.save(new Account(id, status, account.getUsername(), account.getPassword()));
     }
 
     public void deleteAccount(String id) {
+        if (!accountServices.ValidateID(id)) {
+            throw new IllegalArgumentException("Id is invalid: " + id);
+        }
+
+        if (accountRepository.findById(id).isEmpty()) {
+            throw new IllegalArgumentException("Account with id " + id + " does not exist");
+        }
+        
         accountRepository.deleteById(id);
     }
 }
