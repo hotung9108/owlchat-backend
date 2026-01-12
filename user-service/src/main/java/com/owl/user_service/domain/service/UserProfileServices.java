@@ -2,12 +2,15 @@ package com.owl.user_service.domain.service;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.owl.user_service.infrastructure.config.UserProfileServicesConfig;
@@ -119,4 +122,19 @@ public class UserProfileServices {
             throw new RuntimeException("Failed to store avatar file", e);
         }
     }
+    
+    public Resource loadAvatar(String avatar) {
+        try {
+            Path filePath = UserProfileServicesConfig.AVATAR_STORAGE.resolve(avatar);
+
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists()) {
+                throw new IllegalArgumentException("File not found");
+            }
+            return resource;
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Failed to load file", e);
+        }
+    }
+
 }

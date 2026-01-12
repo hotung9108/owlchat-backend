@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.owl.user_service.application.etc.UserAvatarData;
 import com.owl.user_service.application.service.user_profile.ControlUserProfileServices;
 import com.owl.user_service.application.service.user_profile.GetUserProfileServices;
 import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
@@ -27,7 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 
 @RestController
-@RequestMapping("/profile")
+@RequestMapping("/user")
 public class UserProfileController {
     private final GetUserProfileServices getUserProfileService;
     private final ControlUserProfileServices controlUserProfileServices;
@@ -138,4 +139,18 @@ public class UserProfileController {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File size exceeds 10MB limit");
     }
     
+    @GetMapping("/{id}/avatar")
+    public ResponseEntity<?> getUserAvatar(@PathVariable String id) {
+        try {
+            
+            UserAvatarData data = getUserProfileService.getUserAvatarFile(id);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(data.contentType))
+                    .body(data.resource);
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
