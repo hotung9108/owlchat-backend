@@ -1,6 +1,17 @@
 package com.owl.user_service.domain.service;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
+
+import javax.imageio.ImageIO;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import com.owl.user_service.infrastructure.config.UserProfileServicesConfig;
+import com.owl.user_service.infrastructure.utils.FileUtils;
 import com.owl.user_service.persistence.jpa.entity.Account;
 import com.owl.user_service.persistence.jpa.entity.UserProfile;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
@@ -62,5 +73,50 @@ public class UserProfileServices {
         );
 
         return newUserProfile;
+    }
+
+    public void ValidateAvatarFileType(MultipartFile file) {
+        try {
+            BufferedImage image = ImageIO.read(file.getInputStream());
+            if (image == null) {
+                throw new IllegalArgumentException("Invalid image content");
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to read image file");
+        }
+    }
+
+    public void ValidateAvatarFileMetaData(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("File is not an image");
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File must not be empty");
+        }
+
+        if (file.getSize() > UserProfileServicesConfig.MAX_SIZE) {
+            throw new IllegalArgumentException("Image must be smaller than 10MB");
+        }
+    }
+
+    public String SaveUserAvatarFile(String id, MultipartFile file) {
+        try {
+            Files.createDirectories(UserProfileServicesConfig.AVATAR_STORAGE);
+
+            String extension = FileUtils.getFileExtension(file.getOriginalFilename());
+
+            String storedName = UUID.randomUUID().toString() + extension;
+
+            Path target = UserProfileServicesConfig.AVATAR_STORAGE.resolve(storedName);
+
+            Files.copy(file.getInputStream(), target);
+
+            return storedName;
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Failed to store avatar file", e);
+        }
     }
 }

@@ -1,9 +1,16 @@
 package com.owl.user_service.application.service.user_profile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.owl.user_service.application.service.account.ControlAccountServices;
+import com.owl.user_service.application.service.account.GetAccountServices;
 import com.owl.user_service.domain.service.UserProfileServices;
+import com.owl.user_service.infrastructure.config.UserProfileServicesConfig;
 import com.owl.user_service.persistence.jpa.entity.Account;
 import com.owl.user_service.persistence.jpa.entity.UserProfile;
 import com.owl.user_service.persistence.jpa.repository.UserProfileJpaRepository;
@@ -18,11 +25,15 @@ public class ControlUserProfileServices {
     private final UserProfileJpaRepository userProfileJpaRepository;
     private final ControlAccountServices controlAccountServices;
     private final UserProfileServices userProfileServices;
+    private final GetUserProfileServices getUserProfileServices;
+    private final GetAccountServices getAccountServices;
 
-    public ControlUserProfileServices(UserProfileJpaRepository userProfileJpaRepository, ControlAccountServices controlAccountServices) {
+    public ControlUserProfileServices(UserProfileJpaRepository userProfileJpaRepository, ControlAccountServices controlAccountServices, GetUserProfileServices _getUserProfileServices, GetAccountServices _getAccountServices) {
         this.userProfileJpaRepository = userProfileJpaRepository;
         this.controlAccountServices = controlAccountServices;
         this.userProfileServices = new UserProfileServices();
+        this.getUserProfileServices = _getUserProfileServices;
+        this.getAccountServices = _getAccountServices;
     }
 
     public UserProfile addUserProfile(UserProfileCreateRequest userProfileCreateRequest) {
@@ -32,7 +43,26 @@ public class ControlUserProfileServices {
 
             return userProfileJpaRepository.save(userProfileServices.CreateNewUserProfile(newAccount, userProfileCreateRequest.getUserProfile()));
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public UserProfile addUserProfileToAccount(String id, UserProfileRequest userProfileRequest) {
+        Account account = getAccountServices.getAccountById(id);
+
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
+
+        if (getUserProfileServices.getUserProfileById(id) != null) {
+            throw new IllegalArgumentException("User profile already exists");
+        }
+
+        try {
+            return userProfileJpaRepository.save(userProfileServices.CreateNewUserProfile(account, userProfileRequest));
+        }
+        catch (Exception e) {
             throw e;
         }
     }
@@ -65,9 +95,22 @@ public class ControlUserProfileServices {
         return userProfileJpaRepository.save(updatedUserProfile);
     }
 
-    public UserProfile updateAvataUserProfile(String id, String avatar) {
-        UserProfile existingUserProfile = userProfileJpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User profile not found"));
+    public void deleteUserProfile(String id) {
+        if (!userProfileJpaRepository.existsById(id)) {
+            throw new IllegalArgumentException("User profile not found");
+        }
 
+        String avatar = getUserProfileServices.getUserProfileById(id).getAvatar();
+
+        if (avatar != null && !avatar.isEmpty()) {
+            deleteUserAvatarFile(avatar);
+        }
+
+        userProfileJpaRepository.deleteById(id);
+    }
+
+    public UserProfile updateAvatarUserProfile(String id, String avatar) {
+        UserProfile existingUserProfile = userProfileJpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User profile not found"));
 
         UserProfile updatedUserProfile = new UserProfile(
             existingUserProfile.getAccount(),
@@ -78,17 +121,47 @@ public class ControlUserProfileServices {
             existingUserProfile.getEmail(),
             existingUserProfile.getPhoneNumber()
         );
+
+        existingUserProfile.copyFrom(updatedUserProfile);
         
-        return userProfileJpaRepository.save(updatedUserProfile);
+        return userProfileJpaRepository.save(existingUserProfile);
     }
 
-    public void deleteUserProfile(String id) {
-        if (!userProfileJpaRepository.existsById(id)) {
-            throw new IllegalArgumentException("User profile not found");
+    public void deleteUserAvatarFile(String avatarFileName) {
+        if (avatarFileName == null || avatarFileName.isEmpty()) {
+            throw new IllegalArgumentException("User profile don't have avatar");
         }
 
-        userProfileJpaRepository.deleteById(id);
+        Path target = UserProfileServicesConfig.AVATAR_STORAGE.resolve(avatarFileName);
 
-        controlAccountServices.deleteAccount(id);
+        if (Files.exists(target)) {
+            try {
+                Files.delete(target);
+            }
+            catch (IOException e) {
+                throw new RuntimeException("Failed to delete avatar file", e);
+            }
+        }
+        else {
+            throw new IllegalArgumentException("User profile avatar not found");
+        }
+    }
+
+    public void updateUserAvatarFile(String id, MultipartFile file) {
+        if (getUserProfileServices.getUserProfileById(id) == null) {
+            throw new IllegalArgumentException("User profile does not exists");
+        }
+
+        userProfileServices.ValidateAvatarFileMetaData(file);
+
+        userProfileServices.ValidateAvatarFileType(file);
+
+        String avatar = getUserProfileServices.getUserProfileById(id).getAvatar();
+
+        if (avatar != null && !avatar.isEmpty()) {
+            deleteUserAvatarFile(avatar);
+        }
+
+        updateAvatarUserProfile(id, userProfileServices.SaveUserAvatarFile(id, file));
     }
 }

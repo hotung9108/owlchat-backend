@@ -53,8 +53,6 @@ public class GetUserProfileServices {
             throw new IllegalArgumentException("Id is invalid: " + id);
         }   
 
-        return userProfileRepository.findById(id).orElseThrow(() -> 
-            new IllegalArgumentException("UserProfile with id " + id + " does not exist")
-        );
+        return userProfileRepository.findById(id).orElse(null);
     }
 }
