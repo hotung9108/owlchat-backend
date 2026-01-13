@@ -2,6 +2,7 @@ package com.owl.user_service.application.service.account;
 
 import org.springframework.stereotype.Service;
 
+import com.owl.user_service.application.service.user_profile.GetUserProfileServices;
 import com.owl.user_service.domain.service.AccountServices;
 import com.owl.user_service.persistence.jpa.entity.Account;
 import com.owl.user_service.persistence.jpa.repository.AccountJpaRepository;
@@ -15,7 +16,7 @@ public class ControlAccountServices {
     private final AccountServices accountServices;
     private final AccountJpaRepository accountRepository;
 
-    public ControlAccountServices(AccountJpaRepository _accountRepository) {
+    public ControlAccountServices(AccountJpaRepository _accountRepository, GetUserProfileServices _getUserProfileServices) {
         this.accountRepository = _accountRepository;
         accountServices = new AccountServices();
     }
