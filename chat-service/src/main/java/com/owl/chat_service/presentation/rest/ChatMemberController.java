@@ -84,12 +84,7 @@ public class ChatMemberController {
     public ResponseEntity<?> getChatMemberByChatIdAndMemberId (
         @RequestParam(required = false, defaultValue = "") String requesterId,
         @PathVariable String memberId,
-        @PathVariable String chatId,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime joindDateStart,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime joinDateEnd
+        @PathVariable String chatId
     )
     {
         try {
@@ -129,7 +124,6 @@ public class ChatMemberController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
 
     @DeleteMapping("/{memberId}/chat/{chatId}")
     public ResponseEntity<String> deleteChatMember(
