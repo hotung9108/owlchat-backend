@@ -36,8 +36,8 @@ public class ChatController {
         @RequestParam(required = false, defaultValue = "0") int status,
         @RequestParam(required = false, defaultValue = "") String type,
         @RequestParam(required = false, defaultValue = "") String initiatorId,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime startCreatedDate,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime endCreatedDate
+        @RequestParam(required = false, defaultValue = "") LocalDateTime createdDateStart,
+        @RequestParam(required = false, defaultValue = "") LocalDateTime createdDateEnd
     ) 
     {
         try {
@@ -69,8 +69,8 @@ public class ChatController {
         @RequestParam(required = false, defaultValue = "0") int status,
         @RequestParam(required = false, defaultValue = "") String type,
         @RequestParam(required = false, defaultValue = "") String initiatorId,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime startCreatedDate,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime endCreatedDate
+        @RequestParam(required = false, defaultValue = "") LocalDateTime createdDateStart,
+        @RequestParam(required = false, defaultValue = "") LocalDateTime createdDateEnd
     ) 
     {
         try {

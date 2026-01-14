@@ -9,6 +9,7 @@ import com.owl.chat_service.presentation.dto.ChatMemberUpdateRequest;
 import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,8 +28,8 @@ public class ChatMemberController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime startJoindDate,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime endJoinDate
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joindDateStart,
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joinDateEnd
     )
     {
         try {
@@ -47,8 +48,8 @@ public class ChatMemberController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime startJoindDate,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime endJoinDate
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joindDateStart,
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joinDateEnd
     )
     {
         try {
@@ -67,8 +68,8 @@ public class ChatMemberController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime startJoindDate,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime endJoinDate
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joindDateStart,
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joinDateEnd
     )
     {
         try {
@@ -87,8 +88,8 @@ public class ChatMemberController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime startJoindDate,
-        @RequestParam(required = false, defaultValue = "") LocalDateTime endJoinDate
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joindDateStart,
+        @RequestParam(required = false, defaultValue = "") LocalDateTime joinDateEnd
     )
     {
         try {
@@ -130,8 +131,8 @@ public class ChatMemberController {
     }
     
 
-    @PutMapping("/{memberId}/chat/{chatId}")
-    public ResponseEntity<String> updateChatMember(
+    @DeleteMapping("/{memberId}/chat/{chatId}")
+    public ResponseEntity<String> deleteChatMember(
         @RequestParam(required = false, defaultValue = "") String requesterId,
         @PathVariable String memberId,
         @PathVariable String chatId
