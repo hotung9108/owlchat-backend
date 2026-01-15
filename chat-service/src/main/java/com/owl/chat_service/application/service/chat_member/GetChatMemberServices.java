@@ -42,7 +42,7 @@ public class GetChatMemberServices {
             throw new SecurityException("Chat ID cannot be null");
 
         if (!getChatMemberByMemberIdAndChatId(null, memberId, chatId).isPresent()) {
-            throw new SecurityException("Requester does not have permission to access this data");
+            throw new SecurityException("Chat member of chat is not found");
         }
     }
 

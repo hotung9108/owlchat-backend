@@ -3,6 +3,7 @@ package com.owl.chat_service.presentation.rest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.owl.chat_service.application.service.chat_member.ControlChatMemberServices;
 import com.owl.chat_service.application.service.chat_member.GetChatMemberServices;
 import com.owl.chat_service.presentation.dto.ChatMemberCreateRequest;
 import com.owl.chat_service.presentation.dto.ChatMemberUpdateRequest;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,9 +24,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RequestMapping("/member")
 public class ChatMemberController {
     private final GetChatMemberServices getChatMemberServices;
+    private final ControlChatMemberServices controlChatMemberServices;
 
-    public ChatMemberController(GetChatMemberServices getChatMemberServices) {
+    public ChatMemberController(GetChatMemberServices getChatMemberServices, ControlChatMemberServices controlChatMemberServices) {
         this.getChatMemberServices = getChatMemberServices;
+        this.controlChatMemberServices = controlChatMemberServices;
     }
 
     @GetMapping("")
@@ -107,7 +111,7 @@ public class ChatMemberController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null /* ChatMember */);
+            return ResponseEntity.ok().body(controlChatMemberServices.addChatMember(requesterId, chatMemberCreateRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -130,6 +134,38 @@ public class ChatMemberController {
         }
     }
 
+    @PatchMapping("/{memberId}/chat/{chatId}/role")
+    public ResponseEntity<?> updateChatMemberRole(
+        @RequestParam(required = false, defaultValue = "") String requesterId,
+        @PathVariable String memberId,
+        @PathVariable String chatId,
+        @RequestBody String role
+    )
+    {
+        try {
+            return ResponseEntity.ok().body(controlChatMemberServices.updateChatMemberRole(requesterId, memberId, chatId, role));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{memberId}/chat/{chatId}/nickname")
+    public ResponseEntity<?> updateChatMemberNickname(
+        @RequestParam(required = false, defaultValue = "") String requesterId,
+        @PathVariable String memberId,
+        @PathVariable String chatId,
+        @RequestBody String nickname
+    )
+    {
+        try {
+            return ResponseEntity.ok().body(controlChatMemberServices.updateChatMemberNickname(requesterId, memberId, chatId, nickname));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{memberId}/chat/{chatId}")
     public ResponseEntity<String> deleteChatMember(
         @RequestParam(required = false, defaultValue = "") String requesterId,
@@ -138,6 +174,7 @@ public class ChatMemberController {
     )
     {
         try {
+            controlChatMemberServices.deleteChatMember(requesterId, memberId, chatId);
             return ResponseEntity.ok().body("Chat member deleted successfully");
         }
         catch (Exception e) {
