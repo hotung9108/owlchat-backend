@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.owl.chat_service.application.service.chat.ControlChatServices;
+import com.owl.chat_service.application.service.chat.GetChatServices;
+import com.owl.chat_service.presentation.dto.ChatAvatarData;
 import com.owl.chat_service.presentation.dto.ChatCreateRequest;
 
 import java.time.LocalDateTime;
@@ -25,7 +28,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/chat")
 public class ChatController {
-    public ChatController() {}
+    private final GetChatServices getChatServices;
+    private final ControlChatServices controlChatServices;
+
+    public ChatController(GetChatServices getChatServices, ControlChatServices controlChatServices) {
+        this.getChatServices = getChatServices;
+        this.controlChatServices = controlChatServices;
+    }
 
     @GetMapping("")
     public ResponseEntity<?> getChats(
@@ -41,7 +50,7 @@ public class ChatController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null /* List<Chat> */);
+            return ResponseEntity.ok().body(getChatServices.getChats(keywords, page, size, ascSort, status, type, initiatorId, createdDateStart, createdDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -51,7 +60,7 @@ public class ChatController {
     @GetMapping("/{id}")
     public ResponseEntity<?>  getChatById(@RequestParam(required = false, defaultValue = "") String requesterId, @PathVariable String id) {
         try {
-            return ResponseEntity.ok().body(null /* Chat */);
+            return ResponseEntity.ok().body(getChatServices.getChatById(requesterId, id));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -74,7 +83,7 @@ public class ChatController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null /* List<Chat> */);
+            return ResponseEntity.ok().body(getChatServices.getChatsByMemberId(requesterId, memberId, keywords, page, size, ascSort, status, type, initiatorId, createdDateStart, createdDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -84,7 +93,7 @@ public class ChatController {
     @PostMapping("")
     public ResponseEntity<?> addChat(@RequestParam(required = false, defaultValue = "") String requesterId, @RequestBody ChatCreateRequest chatCreateRequest) {
         try {
-            return ResponseEntity.ok().body(null /* Chat */);
+            return ResponseEntity.ok().body(controlChatServices.addChat(requesterId, chatCreateRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -94,7 +103,7 @@ public class ChatController {
     @PatchMapping("/{id}/name")
     public ResponseEntity<?> updateChatNameById(@RequestParam(required = false, defaultValue = "") String requesterId, @PathVariable String id, @RequestBody String name) {
         try {
-            return ResponseEntity.ok().body(null /* Chat */);
+            return ResponseEntity.ok().body(controlChatServices.updateChatNameById(requesterId, id, name));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -104,7 +113,7 @@ public class ChatController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateChatStatusById(@RequestParam(required = false, defaultValue = "") String requesterId, @PathVariable String id, @RequestBody boolean status) {
         try {
-            return ResponseEntity.ok().body(null /* Chat */);
+            return ResponseEntity.ok().body(controlChatServices.updateChatStatusById(requesterId, id, status));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -114,6 +123,7 @@ public class ChatController {
     @PostMapping(value = "/{id}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> updateChatAvatarById(@RequestParam(required = false, defaultValue = "") String requesterId, @PathVariable String id, @RequestPart("file") MultipartFile avatarFile) {
         try {
+            controlChatServices.updateChatAvatarById(requesterId, id, avatarFile);
             return ResponseEntity.ok("Upload avatar successfully");
         }
         catch (Exception e) {
@@ -127,11 +137,13 @@ public class ChatController {
     }
 
     @GetMapping("/{id}/avatar")
-    public ResponseEntity<?> getChatAvatar(@RequestParam(required = false, defaultValue = "") String requesterId, @PathVariable String id) {
+    public ResponseEntity<?> getChatAvatar(@PathVariable String id) {
         try {
+            ChatAvatarData data = getChatServices.getChatAvatar(id);
+
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(new String() /* avatar mediaType */))
-                    .body(null /* avatar resource */);
+                    .contentType(MediaType.parseMediaType(data.contentType /* avatar mediaType */))
+                    .body(data.resource /* avatar resource */);
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -141,6 +153,7 @@ public class ChatController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteChat(@PathVariable String id) {
         try {
+            controlChatServices.deleteChat(id);
             return ResponseEntity.ok("Chat deleted successfully");
         }
         catch (Exception e) {

@@ -39,9 +39,16 @@ public class MessageCriteria {
 
         // status
         if (status != null) {
-            criteriaList.add(
-                Criteria.where("status").is(status == 1)
-            );
+            if (status == 1) {
+                criteriaList.add(
+                    Criteria.where("status").is(true)
+                );
+            }
+            else if (status == -1) {
+                criteriaList.add(
+                    Criteria.where("status").is(false)
+                );
+            }
         }
 
         try {
@@ -130,9 +137,16 @@ public class MessageCriteria {
 
         // status
         if (status != null) {
-            criteriaList.add(
-                Criteria.where("status").is(status == 1)
-            );
+            if (status == 1) {
+                criteriaList.add(
+                    Criteria.where("status").is(true)
+                );
+            }
+            else if (status == -1) {
+                criteriaList.add(
+                    Criteria.where("status").is(false)
+                );
+            }
         }
 
         try {

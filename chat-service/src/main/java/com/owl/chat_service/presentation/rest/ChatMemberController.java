@@ -3,6 +3,7 @@ package com.owl.chat_service.presentation.rest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.owl.chat_service.application.service.chat_member.GetChatMemberServices;
 import com.owl.chat_service.presentation.dto.ChatMemberCreateRequest;
 import com.owl.chat_service.presentation.dto.ChatMemberUpdateRequest;
 
@@ -20,7 +21,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping("/member")
 public class ChatMemberController {
-    public ChatMemberController() {}
+    private final GetChatMemberServices getChatMemberServices;
+
+    public ChatMemberController(GetChatMemberServices getChatMemberServices) {
+        this.getChatMemberServices = getChatMemberServices;
+    }
 
     @GetMapping("")
     public ResponseEntity<?> getChatMembers (
@@ -33,7 +38,7 @@ public class ChatMemberController {
     )
     {
         try {
-            return ResponseEntity.ok().body(null /* List<ChatMember> */);
+            return ResponseEntity.ok().body(getChatMemberServices.getChatMembers(keywords, page, size, ascSort, joindDateStart, joinDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -53,7 +58,7 @@ public class ChatMemberController {
     )
     {
         try {
-            return ResponseEntity.ok().body(null /* List<ChatMember> */);
+            return ResponseEntity.ok().body(getChatMemberServices.getChatMembersByMemberId(requesterId, memberId, keywords, page, size, ascSort, joindDateStart, joinDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -73,7 +78,7 @@ public class ChatMemberController {
     )
     {
         try {
-            return ResponseEntity.ok().body(null /* List<ChatMember> */);
+            return ResponseEntity.ok().body(getChatMemberServices.getChatMembersByChatId(requesterId, chatId, keywords, page, size, ascSort, joindDateStart, joinDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -88,7 +93,7 @@ public class ChatMemberController {
     )
     {
         try {
-            return ResponseEntity.ok().body(null /* ChatMember */);
+            return ResponseEntity.ok().body(getChatMemberServices.getChatMemberByMemberIdAndChatId(requesterId, memberId, chatId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

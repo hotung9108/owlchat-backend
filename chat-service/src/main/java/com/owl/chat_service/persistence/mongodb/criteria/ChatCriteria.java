@@ -37,9 +37,16 @@ public class ChatCriteria {
 
         // status
         if (status != null) {
-            criteriaList.add(
-                Criteria.where("status").is(status == 1)
-            );
+            if (status == 1) {
+                criteriaList.add(
+                    Criteria.where("status").is(true)
+                );
+            }
+            else if (status == -1) {
+                criteriaList.add(
+                    Criteria.where("status").is(false)
+                );
+            }
         }
 
         // type
@@ -103,9 +110,16 @@ public class ChatCriteria {
 
         // status
         if (status != null) {
-            criteriaList.add(
-                Criteria.where("status").is(status == 1)
-            );
+            if (status == 1) {
+                criteriaList.add(
+                    Criteria.where("status").is(true)
+                );
+            }
+            else if (status == -1) {
+                criteriaList.add(
+                    Criteria.where("status").is(false)
+                );
+            }
         }
 
         // type
