@@ -1,7 +1,6 @@
 package com.owl.chat_service.presentation.dto;
 
-public class MessageCreateRequest {
+public class TextMessageUserRequest {
     public String chatId;
-    public String type;
     public String content;
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 
@@ -22,6 +23,7 @@ public class ChatMemberCriteria {
         if (keywords != null && !keywords.isBlank()) {
             List<Criteria> keywordsCriteriaList = new ArrayList<Criteria>();
             for (String keyword : KeywordUtils.parseKeywords(keywords)) {    
+                if (keyword == null) continue;
                 keywordsCriteriaList.add(
                     Criteria.where("nickname")
                             .regex(keyword, "i")
@@ -35,10 +37,10 @@ public class ChatMemberCriteria {
             Criteria dateCriteria = Criteria.where("joinDate");
 
             if (joindDateStart != null) {
-                dateCriteria.gte(joindDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(joindDateStart.toInstant(ZoneOffset.UTC), "joindDateStart cannot be null"));
             }
             if (joinDateEnd != null) {
-                dateCriteria.lte(joinDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(joinDateEnd.toInstant(ZoneOffset.UTC), "joinDateEnd cannot be null"));
             }
 
             criteriaList.add(dateCriteria);
@@ -64,7 +66,8 @@ public class ChatMemberCriteria {
         // keyword search (name)
         if (keywords != null && !keywords.isBlank()) {
             List<Criteria> keywordsCriteriaList = new ArrayList<Criteria>();
-            for (String keyword : KeywordUtils.parseKeywords(keywords)) {    
+            for (String keyword : KeywordUtils.parseKeywords(keywords)) {       
+                if (keyword == null) continue;
                 keywordsCriteriaList.add(
                     Criteria.where("nickname")
                             .regex(keyword, "i")
@@ -78,10 +81,10 @@ public class ChatMemberCriteria {
             Criteria dateCriteria = Criteria.where("joinDate");
 
             if (joindDateStart != null) {
-                dateCriteria.gte(joindDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(joindDateStart.toInstant(ZoneOffset.UTC), "joindDateStart cannot be null"));
             }
             if (joinDateEnd != null) {
-                dateCriteria.lte(joinDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(joinDateEnd.toInstant(ZoneOffset.UTC), "joinDateEnd cannot be null"));
             }
 
             criteriaList.add(dateCriteria);
@@ -107,7 +110,8 @@ public class ChatMemberCriteria {
         // keyword search (name)
         if (keywords != null && !keywords.isBlank()) {
             List<Criteria> keywordsCriteriaList = new ArrayList<Criteria>();
-            for (String keyword : KeywordUtils.parseKeywords(keywords)) {    
+            for (String keyword : KeywordUtils.parseKeywords(keywords)) {       
+                if (keyword == null) continue;
                 keywordsCriteriaList.add(
                     Criteria.where("nickname")
                             .regex(keyword, "i")
@@ -121,10 +125,10 @@ public class ChatMemberCriteria {
             Criteria dateCriteria = Criteria.where("joinDate");
 
             if (joindDateStart != null) {
-                dateCriteria.gte(joindDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(joindDateStart.toInstant(ZoneOffset.UTC), "joindDateStart cannot be null"));
             }
             if (joinDateEnd != null) {
-                dateCriteria.lte(joinDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(joinDateEnd.toInstant(ZoneOffset.UTC), "joinDateEnd cannot be null"));
             }
 
             criteriaList.add(dateCriteria);

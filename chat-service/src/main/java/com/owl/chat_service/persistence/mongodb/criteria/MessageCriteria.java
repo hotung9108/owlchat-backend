@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 
@@ -29,6 +30,7 @@ public class MessageCriteria {
         if (keywords != null && !keywords.isBlank() && MessageType.valueOf(type.toUpperCase()).equals(MessageType.TEXT)) {
             List<Criteria> keywordsCriteriaList = new ArrayList<Criteria>();
             for (String keyword : KeywordUtils.parseKeywords(keywords)) {    
+                if (keyword == null) continue;
                 keywordsCriteriaList.add(
                     Criteria.where("content")
                             .regex(keyword, "i")
@@ -63,10 +65,10 @@ public class MessageCriteria {
             Criteria dateCriteria = Criteria.where("createdDate");
 
             if (createdDateStart != null) {
-                dateCriteria.gte(createdDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(createdDateStart.toInstant(ZoneOffset.UTC)));
             }
             if (createdDateEnd != null) {
-                dateCriteria.lte(createdDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.lte(Objects.requireNonNull(createdDateEnd.toInstant(ZoneOffset.UTC)));
             }
 
             criteriaList.add(dateCriteria);
@@ -77,10 +79,10 @@ public class MessageCriteria {
             Criteria dateCriteria = Criteria.where("sentDate");
 
             if (sentDateStart != null) {
-                dateCriteria.gte(sentDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(sentDateStart.toInstant(ZoneOffset.UTC)));
             }
             if (sentDateEnd != null) {
-                dateCriteria.lte(sentDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.lte(Objects.requireNonNull(sentDateEnd.toInstant(ZoneOffset.UTC)));
             }
 
             criteriaList.add(dateCriteria);
@@ -91,10 +93,10 @@ public class MessageCriteria {
             Criteria dateCriteria = Criteria.where("removedDate");
 
             if (removedDateStart != null) {
-                dateCriteria.gte(removedDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(removedDateStart.toInstant(ZoneOffset.UTC)));
             }
             if (removedDateEnd != null) {
-                dateCriteria.lte(removedDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.lte(Objects.requireNonNull(removedDateEnd.toInstant(ZoneOffset.UTC)));
             }
 
             criteriaList.add(dateCriteria);
@@ -127,6 +129,7 @@ public class MessageCriteria {
         if (keywords != null && !keywords.isBlank() && MessageType.valueOf(type.toUpperCase()).equals(MessageType.TEXT)) {
             List<Criteria> keywordsCriteriaList = new ArrayList<Criteria>();
             for (String keyword : KeywordUtils.parseKeywords(keywords)) {    
+                if (keyword == null) continue;
                 keywordsCriteriaList.add(
                     Criteria.where("content")
                             .regex(keyword, "i")
@@ -161,10 +164,10 @@ public class MessageCriteria {
             Criteria dateCriteria = Criteria.where("createdDate");
 
             if (createdDateStart != null) {
-                dateCriteria.gte(createdDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(createdDateStart.toInstant(ZoneOffset.UTC)));
             }
             if (createdDateEnd != null) {
-                dateCriteria.lte(createdDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.lte(Objects.requireNonNull(createdDateEnd.toInstant(ZoneOffset.UTC)));
             }
 
             criteriaList.add(dateCriteria);
@@ -175,10 +178,10 @@ public class MessageCriteria {
             Criteria dateCriteria = Criteria.where("sentDate");
 
             if (sentDateStart != null) {
-                dateCriteria.gte(sentDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(sentDateStart.toInstant(ZoneOffset.UTC)));
             }
             if (sentDateEnd != null) {
-                dateCriteria.lte(sentDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.lte(Objects.requireNonNull(sentDateEnd.toInstant(ZoneOffset.UTC)));
             }
 
             criteriaList.add(dateCriteria);
@@ -189,10 +192,10 @@ public class MessageCriteria {
             Criteria dateCriteria = Criteria.where("removedDate");
 
             if (removedDateStart != null) {
-                dateCriteria.gte(removedDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(removedDateStart.toInstant(ZoneOffset.UTC)));
             }
             if (removedDateEnd != null) {
-                dateCriteria.lte(removedDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.lte(Objects.requireNonNull(removedDateEnd.toInstant(ZoneOffset.UTC)));
             }
 
             criteriaList.add(dateCriteria);

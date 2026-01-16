@@ -9,8 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import com.owl.chat_service.application.service.chat_member.GetChatMemberServices;
 import com.owl.chat_service.persistence.mongodb.criteria.ChatCriteria;
@@ -146,6 +144,6 @@ public class GetChatServices {
     }
 
     public ChatAvatarData getChatAvatar(String id) {
-        return null;
+        return new ChatAvatarData();
     }
 }

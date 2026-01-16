@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 
@@ -27,6 +28,7 @@ public class ChatCriteria {
         if (keywords != null && !keywords.isBlank()) {
             List<Criteria> keywordsCriteriaList = new ArrayList<Criteria>();
             for (String keyword : KeywordUtils.parseKeywords(keywords)) {    
+                if (keyword == null) continue;
                 keywordsCriteriaList.add(
                     Criteria.where("name")
                             .regex(keyword, "i")
@@ -68,10 +70,10 @@ public class ChatCriteria {
             Criteria dateCriteria = Criteria.where("createdDate");
 
             if (createdDateStart != null) {
-                dateCriteria.gte(createdDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(createdDateStart.toInstant(ZoneOffset.UTC), "createdDateStart cannot be null"));
             }
             if (createdDateEnd != null) {
-                dateCriteria.lte(createdDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(createdDateEnd.toInstant(ZoneOffset.UTC), "createdDateEnd cannot be null"));
             }
 
             criteriaList.add(dateCriteria);
@@ -100,6 +102,7 @@ public class ChatCriteria {
         if (keywords != null && !keywords.isBlank()) {
             List<Criteria> keywordsCriteriaList = new ArrayList<Criteria>();
             for (String keyword : KeywordUtils.parseKeywords(keywords)) {    
+                if (keyword == null) continue;
                 keywordsCriteriaList.add(
                     Criteria.where("name")
                             .regex(keyword, "i")
@@ -141,10 +144,10 @@ public class ChatCriteria {
             Criteria dateCriteria = Criteria.where("createdDate");
 
             if (createdDateStart != null) {
-                dateCriteria.gte(createdDateStart.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(createdDateStart.toInstant(ZoneOffset.UTC), "createdDateStart cannot be null"));
             }
             if (createdDateEnd != null) {
-                dateCriteria.lte(createdDateEnd.toInstant(ZoneOffset.UTC));
+                dateCriteria.gte(Objects.requireNonNull(createdDateEnd.toInstant(ZoneOffset.UTC), "createdDateEnd cannot be null"));
             }
 
             criteriaList.add(dateCriteria);
