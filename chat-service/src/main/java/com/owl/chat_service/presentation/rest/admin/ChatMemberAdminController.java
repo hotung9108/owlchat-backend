@@ -2,7 +2,10 @@ package com.owl.chat_service.presentation.rest.admin;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
+import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
+import com.owl.chat_service.presentation.dto.ChatMemberUpdateNicknameRequest;
+import com.owl.chat_service.presentation.dto.ChatMemberUpdateRoleRequest;
 import com.owl.chat_service.presentation.dto.admin.ChatMemberAdminRequest;
 
 import java.time.Instant;
@@ -18,11 +21,17 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-
 @RestController
 @RequestMapping("/admin/member")
 public class ChatMemberAdminController {
-    public ChatMemberAdminController() {}
+
+    private final ControlChatMemberAdminSerivces controlChatMemberAdminSerivces;
+    private final GetChatMemberAdminServices getChatMemberAdminServices;
+
+    public ChatMemberAdminController(GetChatMemberAdminServices getChatMemberAdminServices, ControlChatMemberAdminSerivces controlChatMemberAdminSerivces) {
+        this.getChatMemberAdminServices = getChatMemberAdminServices;
+        this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;
+    }
 
     // get chat member
         // keywords
@@ -34,17 +43,75 @@ public class ChatMemberAdminController {
         // joinDateEnd
     @GetMapping("")
     public ResponseEntity<?> getChatMember(
-        @RequestParam String keywords,
-        @RequestParam int page,
-        @RequestParam int size,
-        @RequestParam boolean ascSort,
-        @RequestParam String role,
-        @RequestParam Instant joinDateStart,
-        @RequestParam Instant joinDateEnd
+        @RequestParam(required = false) String keywords,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+        @RequestParam(required = false) String role,
+        @RequestParam(required = false) Instant joinDateStart,
+        @RequestParam(required = false) Instant joinDateEnd
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getChatMemberAdminServices.getChatMembers(keywords, page, size, ascSort, role, joinDateStart, joinDateEnd));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // get chat member by chat id
+        // chat id
+        // keywords
+        // page
+        // size
+        // ascSort
+        // role
+        // joinDateStart
+        // joinDateEnd
+    @GetMapping("/chat/{chatId}")
+    public ResponseEntity<?> getChatMemberByChatId(
+        @PathVariable String chatId,
+        @RequestParam(required = false) String keywords,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+        @RequestParam(required = false) String role,
+        @RequestParam(required = false) Instant joinDateStart,
+        @RequestParam(required = false) Instant joinDateEnd
+    ) 
+    {
+        try {
+            return ResponseEntity.ok().body(getChatMemberAdminServices.getChatMembersByChatId(chatId, keywords, page, size, ascSort, role, joinDateStart, joinDateEnd));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // get chat member by member id
+        // member id
+        // keywords
+        // page
+        // size
+        // ascSort
+        // role
+        // joinDateStart
+        // joinDateEnd
+    @GetMapping("/{memberId}")
+    public ResponseEntity<?> getChatMemberByMemberId(
+        @PathVariable String memberId,
+        @RequestParam(required = false) String keywords,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+        @RequestParam(required = false) String role,
+        @RequestParam(required = false) Instant joinDateStart,
+        @RequestParam(required = false) Instant joinDateEnd
+    ) 
+    {
+        try {
+            return ResponseEntity.ok().body(getChatMemberAdminServices.getChatMembersByMemberId(memberId, keywords, page, size, ascSort, role, joinDateStart, joinDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -57,13 +124,12 @@ public class ChatMemberAdminController {
     @GetMapping("/{memberId}/chat/{chatId}")
     public ResponseEntity<?> getMethodName(@PathVariable String memberId, @PathVariable String chatId) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
 
     // post chat member
         // chat member create request
@@ -76,10 +142,10 @@ public class ChatMemberAdminController {
     @PostMapping("")
     public ResponseEntity<?> postChatMember(@RequestBody ChatMemberAdminRequest chatMemberCreateRequest) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatMemberAdminSerivces.addNewChatMember(chatMemberCreateRequest));
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e);
         }
     }
 
@@ -94,9 +160,9 @@ public class ChatMemberAdminController {
             // inviter id
             // join date
     @PutMapping("/{memberId}/chat/{chatId}")
-    public ResponseEntity<?> putChatMember(@PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberAdminRequest chatMemberCreateRequest) {
+    public ResponseEntity<?> putChatMember(@PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberAdminRequest chatMemberRequest) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatMemberAdminSerivces.updateChatMember(chatId, memberId, chatMemberRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -108,9 +174,9 @@ public class ChatMemberAdminController {
         // chat id
         // role
     @PatchMapping("/{memberId}/chat/{chatId}/role")
-    public ResponseEntity<?> patchChatMemberRole(@PathVariable String memberId, @PathVariable String chatId, @PathVariable String role) {
+    public ResponseEntity<?> patchChatMemberRole(@PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateRoleRequest role) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatMemberAdminSerivces.updateChatMemberRole(chatId, memberId, role.role));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -122,9 +188,9 @@ public class ChatMemberAdminController {
         // chat id
         // nickname
     @PatchMapping("/{memberId}/chat/{chatId}/nickname")
-    public ResponseEntity<?> patchChatMemberNickname(@PathVariable String memberId, @PathVariable String chatId, @PathVariable String nickname) {
+    public ResponseEntity<?> patchChatMemberNickname(@PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateNicknameRequest nickname) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatMemberAdminSerivces.updateChatMemberNickname(chatId, memberId, nickname.nickname));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -137,7 +203,8 @@ public class ChatMemberAdminController {
     @DeleteMapping("/{memberId}/chat/{chatId}")
     public ResponseEntity<?> deleteChatMember(@PathVariable String memberId, @PathVariable String chatId) {
         try {
-            return ResponseEntity.ok().body(null);
+            controlChatMemberAdminSerivces.deleteChatMember(chatId, memberId);
+            return ResponseEntity.ok().body("Chat member deleted successfully");
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

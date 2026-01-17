@@ -4,8 +4,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import com.owl.chat_service.application.service.admin.message.ControlMessageAdminServices;
+import com.owl.chat_service.application.service.admin.message.GetMessageAdminServices;
 import com.owl.chat_service.presentation.dto.ChatAvatarData;
 import com.owl.chat_service.presentation.dto.FileMessageUserRequest;
+import com.owl.chat_service.presentation.dto.MessageUpdateContentRequest;
 import com.owl.chat_service.presentation.dto.TextMessageUserRequest;
 
 import java.time.Instant;
@@ -17,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -27,7 +31,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/admin/message")
 public class MessageAdminController {
-    public MessageAdminController() {}
+    private final GetMessageAdminServices getMessageAdminServices;
+    private final ControlMessageAdminServices controlMessageAdminServices;
+
+    public MessageAdminController(GetMessageAdminServices getMessageAdminServices, ControlMessageAdminServices controlMessageAdminServices) {
+        this.getMessageAdminServices = getMessageAdminServices;
+        this.controlMessageAdminServices = controlMessageAdminServices;
+    }
     
     // get messages
         // keywords
@@ -49,9 +59,9 @@ public class MessageAdminController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "0") int status,
-        @RequestParam(required = false, defaultValue = "ALL") String state,
-        @RequestParam(required = false, defaultValue = "") String type,
+        @RequestParam(required = false) Boolean status,
+        @RequestParam(required = false) String state,
+        @RequestParam(required = false) String type,
         @RequestParam(required = false) Instant sentDateStart,
         @RequestParam(required = false) Instant sentDateEnd,
         @RequestParam(required = false) Instant removedDateStart,
@@ -61,7 +71,7 @@ public class MessageAdminController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getMessageAdminServices.getMessages(keywords, page, size, ascSort, status, state, type, sentDateStart, sentDateEnd, removedDateStart, removedDateEnd, createdDateStart, createdDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -90,9 +100,9 @@ public class MessageAdminController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "0") int status,
-        @RequestParam(required = false, defaultValue = "ALL") String state,
-        @RequestParam(required = false, defaultValue = "") String type,
+        @RequestParam(required = false) Boolean status,
+        @RequestParam(required = false) String state,
+        @RequestParam(required = false) String type,
         @RequestParam(required = false) Instant sentDateStart,
         @RequestParam(required = false) Instant sentDateEnd,
         @RequestParam(required = false) Instant removedDateStart,
@@ -102,7 +112,48 @@ public class MessageAdminController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getMessageAdminServices.getMessagesByChatId(chatId, keywords, page, size, ascSort, status, state, type, sentDateStart, sentDateEnd, removedDateStart, removedDateEnd, createdDateStart, createdDateEnd));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // get messages by chat id
+        // chatId
+        // keywords
+        // page
+        // size
+        // ascSort
+        // status
+        // state
+        // type
+        // sentDateStart
+        // sentDateEnd
+        // removedDateStart
+        // removedDateEnd
+        // createdDateStart
+        // createdDateEnd
+    @GetMapping("/sender/{senderId}")
+    public ResponseEntity<?> getMessagesBySenderId(
+        @PathVariable String senderId,
+        @RequestParam(required = false, defaultValue = "") String keywords,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+        @RequestParam(required = false) Boolean status,
+        @RequestParam(required = false) String state,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) Instant sentDateStart,
+        @RequestParam(required = false) Instant sentDateEnd,
+        @RequestParam(required = false) Instant removedDateStart,
+        @RequestParam(required = false) Instant removedDateEnd,
+        @RequestParam(required = false) Instant createdDateStart,
+        @RequestParam(required = false) Instant createdDateEnd
+    ) 
+    {
+        try {
+            return ResponseEntity.ok().body(getMessageAdminServices.getMessagesBySenderId(senderId, keywords, page, size, ascSort, status, state, type, sentDateStart, sentDateEnd, removedDateStart, removedDateEnd, createdDateStart, createdDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -114,7 +165,7 @@ public class MessageAdminController {
     @GetMapping("/{messageId}")
     public ResponseEntity<?> getMessageById(@PathVariable String messageId) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getMessageAdminServices.getMessageById(messageId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -146,10 +197,10 @@ public class MessageAdminController {
             // chat id
             // content
             // senderId
-    @PostMapping("")
-    public ResponseEntity<?> postNewTextMessage(@RequestBody TextMessageUserRequest textMessageRequest) {
+    @PostMapping("/sender/{senderId}")
+    public ResponseEntity<?> postNewTextMessage(@PathVariable String senderId, @RequestBody TextMessageUserRequest textMessageRequest) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlMessageAdminServices.addNewTextMessage(senderId, textMessageRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -160,8 +211,8 @@ public class MessageAdminController {
         // chat id
         // type
         // file
-    @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> postNewFileMessage(@RequestBody FileMessageUserRequest fileMessageRequest) {
+    @PostMapping(value = "/sender/{senderId}/file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> postNewFileMessage(@PathVariable String senderId, @RequestBody FileMessageUserRequest fileMessageRequest) {
         try {
             return ResponseEntity.ok("Upload avatar successfully");
         }
@@ -179,9 +230,19 @@ public class MessageAdminController {
         // message id
         // content
     @PutMapping("/{messageId}/edit")
-    public ResponseEntity<?> putTextMessage(@PathVariable String messageId, @RequestBody String content) {
+    public ResponseEntity<?> putTextMessage(@PathVariable String messageId, @RequestBody MessageUpdateContentRequest content) {
         try {
-            return ResponseEntity.ok("Upload avatar successfully");
+            return ResponseEntity.ok(controlMessageAdminServices.editTextMessage(messageId, content.content));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{messageId}/activate")
+    public ResponseEntity<?> activateTextMessage(@PathVariable String messageId) {
+        try {
+            return ResponseEntity.ok(controlMessageAdminServices.activateMessage(messageId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -193,7 +254,8 @@ public class MessageAdminController {
     @DeleteMapping("/{messageId}/remove")
     public ResponseEntity<?> softDeleteMessage(@PathVariable String messageId) {
         try {
-            return ResponseEntity.ok().body(null);
+            controlMessageAdminServices.softDeleteMessage(messageId);
+            return ResponseEntity.ok().body("Message removed successfully");
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -205,7 +267,8 @@ public class MessageAdminController {
     @DeleteMapping("/{messageId}")
     public ResponseEntity<?> hardDeleteMessage(@PathVariable String messageId) {
         try {
-            return ResponseEntity.ok().body(null);
+            controlMessageAdminServices.hardDeleteMessage(messageId);
+            return ResponseEntity.ok().body("Message deleted successfully");
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -1,5 +1,6 @@
 package com.owl.chat_service.persistence.mongodb.criteria;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -15,11 +16,11 @@ public class ChatCriteria {
 
     public static Criteria FindAllChatsWithCriteria(
         String keywords,
-        Integer status,
+        Boolean status,
         String type,
         String initiatorId,
-        LocalDateTime createdDateStart,
-        LocalDateTime createdDateEnd
+        Instant createdDateStart,
+        Instant createdDateEnd
     ) 
     {
         List<Criteria> criteriaList = new ArrayList<>();
@@ -39,12 +40,12 @@ public class ChatCriteria {
 
         // status
         if (status != null) {
-            if (status == 1) {
+            if (status) {
                 criteriaList.add(
                     Criteria.where("status").is(true)
                 );
             }
-            else if (status == -1) {
+            else if (!status) {
                 criteriaList.add(
                     Criteria.where("status").is(false)
                 );
@@ -70,10 +71,10 @@ public class ChatCriteria {
             Criteria dateCriteria = Criteria.where("createdDate");
 
             if (createdDateStart != null) {
-                dateCriteria.gte(Objects.requireNonNull(createdDateStart.toInstant(ZoneOffset.UTC), "createdDateStart cannot be null"));
+                dateCriteria.gte(Objects.requireNonNull(createdDateStart, "createdDateStart cannot be null"));
             }
             if (createdDateEnd != null) {
-                dateCriteria.gte(Objects.requireNonNull(createdDateEnd.toInstant(ZoneOffset.UTC), "createdDateEnd cannot be null"));
+                dateCriteria.gte(Objects.requireNonNull(createdDateEnd, "createdDateEnd cannot be null"));
             }
 
             criteriaList.add(dateCriteria);

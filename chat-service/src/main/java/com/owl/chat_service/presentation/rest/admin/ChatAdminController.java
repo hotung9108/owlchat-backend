@@ -4,11 +4,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.owl.chat_service.application.service.admin.chat.ControlChatAdminService;
+import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.presentation.dto.ChatAvatarData;
 import com.owl.chat_service.presentation.dto.admin.ChatAdminRequest;
-
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -25,12 +24,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
-@RequestMapping("/chat")
+@RequestMapping("/admin/chat")
 public class ChatAdminController {
-    public ChatAdminController() {}
+
+    private final ControlChatAdminService controlChatAdminService;
+    private final GetChatAdminServices getChatAdminServices;
+
+    public ChatAdminController(GetChatAdminServices getChatAdminServices, ControlChatAdminService controlChatAdminService) {
+        this.getChatAdminServices = getChatAdminServices;
+        this.controlChatAdminService = controlChatAdminService;
+    }
 
     // get chat
         // keywords
@@ -42,17 +49,19 @@ public class ChatAdminController {
         // createdDateEnd
     @GetMapping("")
     public ResponseEntity<?> getChats(
-        @RequestParam String keywords,
-        @RequestParam int page,
-        @RequestParam int size,
-        @RequestParam boolean ascSort,
-        @RequestParam String type,
-        @RequestParam Instant createdDateStart,
-        @RequestParam Instant createdDateEnd
+        @RequestParam(required = false) String keywords,
+        @RequestParam(required = false, defaultValue = "0") int page,
+        @RequestParam(required = false, defaultValue = "10") int size,
+        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+        @RequestParam(required = false) Boolean status,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) String initiatorId,
+        @RequestParam(required = false) Instant createdDateStart,
+        @RequestParam(required = false) Instant createdDateEnd
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getChatAdminServices.getChats(keywords, page, size, ascSort, status, type, initiatorId, createdDateStart, createdDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -65,7 +74,7 @@ public class ChatAdminController {
     @GetMapping("/{chatId}")
     public ResponseEntity<?> getChatById(@PathVariable String chatId) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getChatAdminServices.getChatById(chatId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -94,10 +103,10 @@ public class ChatAdminController {
     
     // post chat
         // chat create request
-    @PostMapping("path")
+    @PostMapping("")
     public ResponseEntity<?> postChat(@RequestBody ChatAdminRequest chatRequest) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatAdminService.addNewChat(chatRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -110,7 +119,7 @@ public class ChatAdminController {
     @PutMapping("/{chatId}")
     public ResponseEntity<?> putChat(@PathVariable String chatId, @RequestBody ChatAdminRequest chatRequest) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatAdminService.updateChat(chatId, chatRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -123,7 +132,7 @@ public class ChatAdminController {
     @PatchMapping("/{chatId}/status")
     public ResponseEntity<?> patchChatStatus(@PathVariable String chatId, @RequestBody boolean status) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatAdminService.updateChatStatus(chatId, status));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -153,7 +162,8 @@ public class ChatAdminController {
     @DeleteMapping("/{chatId}")
     public ResponseEntity<?> deleteChat(@PathVariable String chatId) {
         try {
-            return ResponseEntity.ok(null);
+            controlChatAdminService.deleteChat(chatId);
+            return ResponseEntity.ok().body("Chat deleted successfully");
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

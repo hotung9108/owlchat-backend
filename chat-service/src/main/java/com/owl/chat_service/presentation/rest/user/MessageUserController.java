@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import com.owl.chat_service.presentation.dto.ChatAvatarData;
 import com.owl.chat_service.presentation.dto.FileMessageUserRequest;
+import com.owl.chat_service.presentation.dto.MessageUpdateContentRequest;
 import com.owl.chat_service.presentation.dto.TextMessageUserRequest;
 
 import java.time.Instant;
@@ -141,7 +142,7 @@ public class MessageUserController {
         // message id
         // content
     @PutMapping("/{messageId}/edit")
-    public ResponseEntity<?> putTextMessage(@RequestHeader String requesterId, @PathVariable String messageId, @RequestBody String content) {
+    public ResponseEntity<?> putTextMessage(@RequestHeader String requesterId, @PathVariable String messageId, @RequestBody MessageUpdateContentRequest content) {
         try {
             return ResponseEntity.ok("Upload avatar successfully");
         }

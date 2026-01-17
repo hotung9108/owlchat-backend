@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.owl.chat_service.presentation.dto.ChatMemberUpdateNicknameRequest;
+import com.owl.chat_service.presentation.dto.ChatMemberUpdateRoleRequest;
 import com.owl.chat_service.presentation.dto.user.ChatMemberCreateUserRequest;
 
 import org.springframework.http.ResponseEntity;
@@ -93,7 +95,7 @@ public class ChatMemberUserController {
         // chat id
         // role
     @PatchMapping("/{memberId}/chat/{chatId}/role")
-    public ResponseEntity<?> patchChatMemberRole(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId, @RequestBody String role) {
+    public ResponseEntity<?> patchChatMemberRole(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateRoleRequest role) {
         try {
             return ResponseEntity.ok().body(null);
         }
@@ -108,7 +110,7 @@ public class ChatMemberUserController {
         // chat id
         // nickname
     @PatchMapping("/{memberId}/chat/{chatId}/nickname")
-    public ResponseEntity<?> patchChatMemberNickname(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId, @RequestBody String nickname)  {
+    public ResponseEntity<?> patchChatMemberNickname(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateNicknameRequest nickname)  {
         try {
             return ResponseEntity.ok().body(null);
         }

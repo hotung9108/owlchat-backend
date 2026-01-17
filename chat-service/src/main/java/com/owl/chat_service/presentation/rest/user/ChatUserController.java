@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.owl.chat_service.presentation.dto.ChatAvatarData;
+import com.owl.chat_service.presentation.dto.ChatUpdateNameRequest;
 import com.owl.chat_service.presentation.dto.user.ChatUserRequest;
 
 import java.time.Instant;
@@ -49,7 +50,7 @@ public class ChatUserController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "ALL") String type,
+        @RequestParam(required = false) String type,
         @RequestParam(required = false) Instant joinDateStart,
         @RequestParam(required = false) Instant joinDateEnd
     ) 
@@ -115,7 +116,7 @@ public class ChatUserController {
         // chat id
         // chat name
     @PatchMapping("/{chatId}/name")
-    public ResponseEntity<?> patchChatName(@RequestHeader String chatId, @RequestBody String name) {
+    public ResponseEntity<?> patchChatName(@RequestHeader String chatId, @RequestBody ChatUpdateNameRequest name) {
         try {
             return ResponseEntity.ok().body(null);
         }
