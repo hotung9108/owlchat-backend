@@ -9,17 +9,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.domain.chat.validate.ChatValidate;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
+import com.owl.chat_service.persistence.mongodb.document.Message;
 import com.owl.chat_service.persistence.mongodb.document.Chat.ChatType;
 import com.owl.chat_service.persistence.mongodb.repository.ChatRepository;
 import com.owl.chat_service.presentation.dto.admin.ChatAdminRequest;
 
 @Service
 @Transactional
-public class ControlChatAdminService {
+public class ControlChatAdminServices {
     private final GetChatAdminServices getChatAdminServices;
     private final ChatRepository chatRepository;
 
-    public ControlChatAdminService(ChatRepository chatRepository, GetChatAdminServices getChatAdminServices) {
+    public ControlChatAdminServices(ChatRepository chatRepository, GetChatAdminServices getChatAdminServices) {
         this.getChatAdminServices = getChatAdminServices;
         this.chatRepository = chatRepository;}
 
@@ -94,5 +95,30 @@ public class ControlChatAdminService {
             throw new IllegalArgumentException("Chat does not exists");
 
         chatRepository.deleteById(Objects.requireNonNull(existingChat.getId(), "Delete chat is null"));
+    }
+
+    public void updateChatNewestMessage(Message message) {
+        if (message == null) 
+            throw new IllegalArgumentException("Invalid message");
+
+        if (message.getId() == null || message.getId().isBlank()) 
+            throw new IllegalArgumentException("Invalid message id");
+
+        if (message.getSentDate() == null) 
+            throw new IllegalArgumentException("Invalid message sent date");
+
+        if (message.getChatId() == null || message.getChatId().isBlank()) 
+            throw new IllegalArgumentException("Invalid chat id");
+
+        Chat chat = getChatAdminServices.getChatById(message.getChatId());
+
+        if (chat == null)
+            throw new IllegalArgumentException("Chat does not exists");
+
+        if (message.getSentDate().compareTo(chat.getNewestMessageDate()) == 1) {
+            chat.setNewestMessageId(message.getId());
+            chat.setNewestMessageDate(message.getSentDate());
+            chatRepository.save(chat);
+        }
     }
 }

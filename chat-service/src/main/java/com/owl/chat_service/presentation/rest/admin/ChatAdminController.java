@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
-import com.owl.chat_service.application.service.admin.chat.ControlChatAdminService;
+import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.presentation.dto.ChatAvatarData;
 import com.owl.chat_service.presentation.dto.admin.ChatAdminRequest;
@@ -31,10 +31,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/admin/chat")
 public class ChatAdminController {
 
-    private final ControlChatAdminService controlChatAdminService;
+    private final ControlChatAdminServices controlChatAdminService;
     private final GetChatAdminServices getChatAdminServices;
 
-    public ChatAdminController(GetChatAdminServices getChatAdminServices, ControlChatAdminService controlChatAdminService) {
+    public ChatAdminController(GetChatAdminServices getChatAdminServices, ControlChatAdminServices controlChatAdminService) {
         this.getChatAdminServices = getChatAdminServices;
         this.controlChatAdminService = controlChatAdminService;
     }

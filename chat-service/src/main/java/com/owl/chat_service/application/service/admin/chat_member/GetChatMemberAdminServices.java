@@ -24,7 +24,7 @@ public class GetChatMemberAdminServices {
         this.chatMemberWithCriteriaRepository = chatMemberWithCriteriaRepository;
     }
 
-    private List<ChatMember> getChatMembers(Criteria criteria, int page, int size, boolean ascSort) {
+    public List<ChatMember> getChatMembers(Criteria criteria, int page, int size, boolean ascSort) {
         if (page == -1) {
             if (criteria == null)
                 return chatMemberWithCriteriaRepository.findAll(Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "joinDate"));

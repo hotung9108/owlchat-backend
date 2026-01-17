@@ -3,6 +3,8 @@ package com.owl.chat_service.presentation.rest.user;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import com.owl.chat_service.application.service.user.message.ControlMessageUserServices;
+import com.owl.chat_service.application.service.user.message.GetMessageUserServices;
 import com.owl.chat_service.presentation.dto.ChatAvatarData;
 import com.owl.chat_service.presentation.dto.FileMessageUserRequest;
 import com.owl.chat_service.presentation.dto.MessageUpdateContentRequest;
@@ -25,12 +27,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 
 
-
-
 @RestController
 @RequestMapping("/message")
 public class MessageUserController {
-    public MessageUserController() {}
+
+    private final ControlMessageUserServices controlMessageUserServices;
+    private final GetMessageUserServices getMessageUserServices;
+
+    public MessageUserController(GetMessageUserServices getMessageUserServices, ControlMessageUserServices controlMessageUserServices) {
+        this.getMessageUserServices = getMessageUserServices;
+        this.controlMessageUserServices = controlMessageUserServices;
+    }
 
     // get messages by chat id
         // requester id
@@ -52,13 +59,13 @@ public class MessageUserController {
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
         @RequestParam(required = false, defaultValue = "ALL") String type,
-        @RequestParam(required = false, defaultValue = "") String sendId,
+        @RequestParam(required = false, defaultValue = "") String senderId,
         @RequestParam(required = false) Instant sentDateStart,
         @RequestParam(required = false) Instant sentDateEnd 
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getMessageUserServices.getMessagesByChatId(requesterId, chatId, keywords, page, size, ascSort, type, senderId, sentDateStart, sentDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -72,14 +79,13 @@ public class MessageUserController {
     @GetMapping("/{messageId}")
     public ResponseEntity<?> getMessageById(@RequestHeader String requesterId, @PathVariable String messageId) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getMessageUserServices.getMessageById(requesterId, messageId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
     
-
     // get message file by id
         // requester id
         // message id
@@ -109,13 +115,12 @@ public class MessageUserController {
     @PostMapping("")
     public ResponseEntity<?> postNewTextMessage(@RequestHeader String requesterId, @RequestBody TextMessageUserRequest textMessageRequest) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlMessageUserServices.addNewTextMessage(requesterId, textMessageRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
 
     // post new file message
         // requester id
@@ -144,7 +149,7 @@ public class MessageUserController {
     @PutMapping("/{messageId}/edit")
     public ResponseEntity<?> putTextMessage(@RequestHeader String requesterId, @PathVariable String messageId, @RequestBody MessageUpdateContentRequest content) {
         try {
-            return ResponseEntity.ok("Upload avatar successfully");
+            return ResponseEntity.ok(controlMessageUserServices.editTextMessage(requesterId, messageId, content.content));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -157,7 +162,8 @@ public class MessageUserController {
     @DeleteMapping("/{messageId}")
     public ResponseEntity<?> softDeleteMessage(@RequestHeader String requesterId, @PathVariable String messageId) {
         try {
-            return ResponseEntity.ok().body(null);
+            controlMessageUserServices.softDeleteMessage(requesterId, messageId);
+            return ResponseEntity.ok().body("Message removed successfully");
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

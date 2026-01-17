@@ -24,7 +24,7 @@ public class GetMessageAdminServices {
         this.messageWithCriteriaRepository = messageWithCriteriaRepository;
     }
 
-    private List<Message> getMessages(Criteria criteria, int page, int size, boolean ascSort) {
+    public List<Message> getMessages(Criteria criteria, int page, int size, boolean ascSort) {
         if (page == -1) {
             if (criteria == null)
                 return messageWithCriteriaRepository.findAll(Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "createdDate"));

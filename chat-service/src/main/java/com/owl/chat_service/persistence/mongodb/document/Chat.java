@@ -26,6 +26,10 @@ public class Chat {
     /** Former FK: user_profile.id */
     private String initiatorId;
 
+    private String newestMessageId;
+
+    private Instant newestMessageDate;
+
     private Instant createdDate;
 
     private Instant updatedDate;
@@ -93,4 +97,21 @@ public class Chat {
     public void setUpdatedDate(Instant updatedDate) {
         this.updatedDate = updatedDate;
     }
+
+    public Instant getNewestMessageDate() {
+        return newestMessageDate;
+    }
+
+    public void setNewestMessageDate(Instant newestMessageDate) {
+        this.newestMessageDate = newestMessageDate;
+    }
+
+    public String getNewestMessageId() {
+        return newestMessageId;
+    }
+
+    public void setNewestMessageId(String newestMessageId) {
+        this.newestMessageId = newestMessageId;
+    }
+
 }

@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.owl.chat_service.application.service.user.chat.ControlChatUserServices;
+import com.owl.chat_service.application.service.user.chat.GetChatUserServices;
 import com.owl.chat_service.presentation.dto.ChatAvatarData;
 import com.owl.chat_service.presentation.dto.ChatUpdateNameRequest;
 import com.owl.chat_service.presentation.dto.user.ChatUserRequest;
@@ -17,6 +18,7 @@ import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,11 +28,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-
 @RestController
 @RequestMapping("/chat")
 public class ChatUserController {
-    public ChatUserController() {}
+
+    private final ControlChatUserServices controlChatUserServices;
+    private final GetChatUserServices getChatUserServices;
+
+    public ChatUserController(GetChatUserServices getChatUserServices, ControlChatUserServices controlChatUserServices) {
+        this.getChatUserServices = getChatUserServices;
+        this.controlChatUserServices = controlChatUserServices;}
 
     // get chats by member id
         // requester id
@@ -49,14 +56,14 @@ public class ChatUserController {
         @RequestParam(required = false, defaultValue = "") String keywords,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+        @RequestParam(required = false, defaultValue = "false") boolean ascSort,
         @RequestParam(required = false) String type,
         @RequestParam(required = false) Instant joinDateStart,
         @RequestParam(required = false) Instant joinDateEnd
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getChatUserServices.getChatsByMemberId(requesterId, memberId, keywords, page, size, ascSort, type, joinDateStart, joinDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -69,7 +76,7 @@ public class ChatUserController {
     @GetMapping("/chat/{chatId}")
     public ResponseEntity<?> getChatByChatId(@RequestHeader String requesterId, @PathVariable String chatId) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getChatUserServices.getChatById(requesterId, chatId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -102,9 +109,9 @@ public class ChatUserController {
             // name
             // chat member id list
     @PostMapping("")
-    public ResponseEntity<?> postChat(@RequestBody ChatUserRequest chatRequest) {
+    public ResponseEntity<?> postChat(@RequestHeader String requesterId, @RequestBody ChatUserRequest chatRequest) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatUserServices.addNewChat(requesterId, chatRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -116,9 +123,9 @@ public class ChatUserController {
         // chat id
         // chat name
     @PatchMapping("/{chatId}/name")
-    public ResponseEntity<?> patchChatName(@RequestHeader String chatId, @RequestBody ChatUpdateNameRequest name) {
+    public ResponseEntity<?> patchChatName(@RequestHeader String requesterId, @RequestHeader String chatId, @RequestBody ChatUpdateNameRequest name) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlChatUserServices.updateChatName(requesterId, chatId, name.name));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -147,9 +154,10 @@ public class ChatUserController {
     // deactivate chat
         // requester id
         // chat id
-    @PatchMapping("/{chatId}/deactivate")
+    @DeleteMapping("/{chatId}/deactivate")
     public ResponseEntity<String> deactivateChat(@RequestHeader String requesterId, @PathVariable String chatId) {
         try {
+            controlChatUserServices.deleteChat(requesterId, chatId);
             return ResponseEntity.ok("Deactivate chat successfully");
         }
         catch (Exception e) {

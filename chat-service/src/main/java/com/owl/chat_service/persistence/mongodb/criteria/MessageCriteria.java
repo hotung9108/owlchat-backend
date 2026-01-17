@@ -141,7 +141,7 @@ public class MessageCriteria {
 
         //chat id
         if (chatId != null && !chatId.isEmpty()) {
-            criteriaList.add(Criteria.where("chatId").regex(chatId, "i"));
+            criteriaList.add(Criteria.where("chatId").is(chatId));
         }
 
         criteriaList.add(FindAllMessagesWithCriteria(idSearch, keywords, status, state, type, sentDateStart, sentDateEnd, removedDateStart, removedDateEnd, createdDateStart, createdDateEnd));
@@ -168,7 +168,42 @@ public class MessageCriteria {
 
         // sender id
         if (senderId != null && !senderId.isEmpty()) {
-            criteriaList.add(Criteria.where("senderId").regex(senderId, "i"));
+            criteriaList.add(Criteria.where("senderId").is(senderId));
+        }
+
+        Criteria criteria = FindAllMessagesWithCriteria(idSearch, keywords, status, state, type, sentDateStart, sentDateEnd, removedDateStart, removedDateEnd, createdDateStart, createdDateEnd);
+        if (criteria != null)
+            criteriaList.add(criteria);
+
+        return criteriaList.isEmpty() ? null : new Criteria().andOperator(criteriaList);
+    }
+
+    public static Criteria FindMessagesByChatIdAndSenderIdWithCriteria(
+        boolean idSearch,
+        String chatId,
+        String senderId,
+        String keywords, 
+        Boolean status,
+        String state,
+        String type,
+        Instant sentDateStart,
+        Instant sentDateEnd,
+        Instant removedDateStart,
+        Instant removedDateEnd,
+        Instant createdDateStart,
+        Instant createdDateEnd
+    )
+    {
+        List<Criteria> criteriaList = new ArrayList<>();
+
+        //chat id
+        if (chatId != null && !chatId.isEmpty()) {
+            criteriaList.add(Criteria.where("chatId").is(chatId));
+        }
+
+        // sender id
+        if (senderId != null && !senderId.isEmpty()) {
+            criteriaList.add(Criteria.where("senderId").is(senderId));
         }
 
         Criteria criteria = FindAllMessagesWithCriteria(idSearch, keywords, status, state, type, sentDateStart, sentDateEnd, removedDateStart, removedDateEnd, createdDateStart, createdDateEnd);

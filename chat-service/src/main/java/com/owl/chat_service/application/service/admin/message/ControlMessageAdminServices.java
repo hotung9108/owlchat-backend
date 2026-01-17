@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.domain.chat.validate.MessageValidate;
 import com.owl.chat_service.persistence.mongodb.document.Message;
@@ -21,11 +22,13 @@ public class ControlMessageAdminServices {
     private final MessageRepository messageRepository;
     private final GetChatAdminServices getChatAdminServices;
     private final GetMessageAdminServices getMessageAdminServices;
+    private final ControlChatAdminServices controlChatAdminService;
 
-    public ControlMessageAdminServices(MessageRepository messageRepository, GetChatAdminServices getChatAdminServices, GetMessageAdminServices getMessageAdminServices) {
+    public ControlMessageAdminServices(MessageRepository messageRepository, GetChatAdminServices getChatAdminServices, GetMessageAdminServices getMessageAdminServices, ControlChatAdminServices controlChatAdminService) {
         this.messageRepository = messageRepository;
         this.getChatAdminServices = getChatAdminServices;
         this.getMessageAdminServices = getMessageAdminServices;
+        this.controlChatAdminService = controlChatAdminService;
     }
 
     public Message addNewTextMessage(String senderId, TextMessageUserRequest textMessageRequest) {
@@ -56,7 +59,11 @@ public class ControlMessageAdminServices {
         newMessage.setSentDate(Instant.now());
         newMessage.setCreatedDate(Instant.now());
 
-        return messageRepository.save(newMessage);
+        messageRepository.save(newMessage);
+
+        controlChatAdminService.updateChatNewestMessage(newMessage);
+
+        return newMessage;
     }
 
     public Message editTextMessage(String messageId, String content) {
@@ -85,7 +92,11 @@ public class ControlMessageAdminServices {
         newMessage.setSentDate(existingMessage.getSentDate());
         newMessage.setCreatedDate(Instant.now());
 
-        return messageRepository.save(newMessage);
+        messageRepository.save(newMessage);
+
+        controlChatAdminService.updateChatNewestMessage(newMessage);
+
+        return newMessage;
     }
 
     public Message activateMessage(String messageId) {
@@ -122,8 +133,10 @@ public class ControlMessageAdminServices {
         existingMessage.setStatus(false);
         existingMessage.setState(MessageState.REMOVED);
         existingMessage.setRemovedDate(Instant.now());
-        
+
         messageRepository.save(existingMessage);
+
+        controlChatAdminService.updateChatNewestMessage(existingMessage);
     }
 
     public void hardDeleteMessage(String messageId) {

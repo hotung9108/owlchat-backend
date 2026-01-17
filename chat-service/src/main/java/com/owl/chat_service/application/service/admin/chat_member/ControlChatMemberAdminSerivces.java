@@ -63,8 +63,8 @@ public class ControlChatMemberAdminSerivces {
         else 
             newChatMember.setRole(ChatMemberRole.valueOf(chatMemberRequest.role));
 
-        if (!ChatMemberValidate.validateNickname(chatMemberRequest.nickname))
-            throw new IllegalArgumentException("Invalid nickname");
+        // if (!ChatMemberValidate.validateNickname(chatMemberRequest.nickname))
+        //     throw new IllegalArgumentException("Invalid nickname");
 
         newChatMember.setId(UUID.randomUUID().toString());
         newChatMember.setMemberId(chatMemberRequest.memberId);
@@ -148,9 +148,8 @@ public class ControlChatMemberAdminSerivces {
         if (existingChatMember == null) 
             throw new IllegalArgumentException("Chat member does not exists");
 
-        nickname = nickname.trim();
-        if (!ChatMemberValidate.validateNickname(nickname))
-            throw new IllegalArgumentException("Invalid nickname");
+        // if (!ChatMemberValidate.validateNickname(nickname))
+        //     throw new IllegalArgumentException("Invalid nickname");
 
         existingChatMember.setNickname(nickname.trim());
 
