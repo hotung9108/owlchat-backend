@@ -2,6 +2,7 @@ package com.owl.chat_service.application.service.user.message;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Objects;
 import com.owl.chat_service.application.service.admin.message.ControlMessageAdminServices;
 import com.owl.chat_service.application.service.user.chat.GetChatUserServices;
 import com.owl.chat_service.persistence.mongodb.document.Message;
@@ -33,7 +34,7 @@ public class ControlMessageUserServices {
         if (existingMessage == null)
             throw new IllegalArgumentException("Message not found");
 
-        if (existingMessage.getSenderId() != requesterId) 
+        if (!Objects.equals(existingMessage.getSenderId(), requesterId)) 
             throw new SecurityException("Requester does not have permission to edit this message");
 
         return controlMessageAdminServices.editTextMessage(messageId, content);
@@ -45,8 +46,8 @@ public class ControlMessageUserServices {
         if (existingMessage == null)
             throw new IllegalArgumentException("Message not found");
 
-        if (existingMessage.getSenderId() != requesterId) 
-            throw new SecurityException("Requester does not have permission to edit this message");
+        if (!Objects.equals(existingMessage.getSenderId(), requesterId)) 
+            throw new SecurityException("Requester does not have permission to delete this message");
 
         controlMessageAdminServices.softDeleteMessage(messageId);
     }

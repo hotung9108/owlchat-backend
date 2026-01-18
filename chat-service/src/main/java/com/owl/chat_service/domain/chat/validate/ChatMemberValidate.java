@@ -4,7 +4,7 @@ import com.owl.chat_service.persistence.mongodb.document.ChatMember.ChatMemberRo
 
 public class ChatMemberValidate {
     public static boolean validateRequesterAndMemberAreSame(String requesterId, String memberId) {
-        if (requesterId != memberId) {
+        if (requesterId.compareToIgnoreCase(memberId) != 0) {
             return false;
         }
         return true;

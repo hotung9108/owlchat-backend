@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
+import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
 import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.validate.ChatMemberValidate;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
@@ -15,15 +16,15 @@ import com.owl.chat_service.presentation.dto.user.ChatMemberCreateUserRequest;
 @Transactional
 public class ControlChatMemberUserServices {
     private final ControlChatMemberAdminSerivces controlChatMemberAdminSerivces;
-    private final GetChatMemberUserServices getChatMemberUserServices;
+    private final GetChatMemberAdminServices getChatMemberAdminServices;
 
-    public ControlChatMemberUserServices(ControlChatMemberAdminSerivces controlChatMemberAdminSerivces, GetChatMemberUserServices getChatMemberUserServices) {
+    public ControlChatMemberUserServices(ControlChatMemberAdminSerivces controlChatMemberAdminSerivces, GetChatMemberAdminServices getChatMemberAdminServices) {
         this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;
-        this.getChatMemberUserServices = getChatMemberUserServices;
+        this.getChatMemberAdminServices = getChatMemberAdminServices;
     }
 
     public ChatMember addNewChatMember(String requesterId, ChatMemberCreateUserRequest chatMemberCreateRequest) {
-        ChatMember chatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatMemberCreateRequest.chatId);
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberCreateRequest.chatId, requesterId);
 
         if (chatMember == null) 
             throw new SecurityException("Requester does not have permission to add member to this chat");
@@ -38,8 +39,8 @@ public class ControlChatMemberUserServices {
     }
 
     public ChatMember updateChatMemberRole(String requesterId, String memberId, String chatId, String role) {
-        ChatMember requesterChatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
-        ChatMember chatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
+        ChatMember requesterChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
         if (requesterChatMember == null) 
             throw new SecurityException("Requester does not have permission to access this chat");
@@ -67,8 +68,8 @@ public class ControlChatMemberUserServices {
     }
 
     public ChatMember updateChatMemberNickname(String requesterId, String memberId, String chatId, String nickname) {
-        ChatMember requesterChatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
-        ChatMember chatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
+        ChatMember requesterChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
         if (requesterChatMember == null) 
             throw new SecurityException("Requester does not have permission to access this chat");
@@ -83,8 +84,8 @@ public class ControlChatMemberUserServices {
     }
 
     public void deleteChatMember(String requesterId, String memberId, String chatId) {
-        ChatMember requesterChatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
-        ChatMember chatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
+        ChatMember requesterChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
         if (requesterChatMember == null) 
             throw new SecurityException("Requester does not have permission to access this chat");
@@ -92,11 +93,13 @@ public class ControlChatMemberUserServices {
         if (chatMember == null) 
             throw new IllegalArgumentException("Chat member not found");
 
-        if (ChatMemberServices.compareRole(requesterChatMember.getRole(), ChatMemberRole.ADMIN) < 0)
-            throw new SecurityException("Requester does not have permission to set member role");
+        if (!ChatMemberValidate.validateRequesterAndMemberAreSame(requesterId, memberId)){
+            if (ChatMemberServices.compareRole(requesterChatMember.getRole(), ChatMemberRole.ADMIN) < 0)
+                throw new SecurityException("Requester does not have permission to remove member");
 
-        if (ChatMemberServices.compareRole(requesterChatMember.getRole(), chatMember.getRole()) <= 0) 
-            throw new SecurityException("Member have role higher or equal to requester");
+            if (ChatMemberServices.compareRole(requesterChatMember.getRole(), chatMember.getRole()) <= 0) 
+                throw new SecurityException("Member have role higher or equal to requester");
+        }
 
         controlChatMemberAdminSerivces.deleteChatMember(chatId, memberId);
     }

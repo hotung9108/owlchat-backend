@@ -29,7 +29,7 @@ public class GetChatMemberAdminServices {
             if (criteria == null)
                 return chatMemberWithCriteriaRepository.findAll(Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "joinDate"));
             else
-                return chatMemberWithCriteriaRepository.findAll(criteria, Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC));
+                return chatMemberWithCriteriaRepository.findAll(criteria, Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "joinDate"));
         }
 
         Pageable pageable = PagintaionCriteria.PagableCriteria(page, size, ascSort, "joinDate");

@@ -115,7 +115,7 @@ public class ControlChatAdminServices {
         if (chat == null)
             throw new IllegalArgumentException("Chat does not exists");
 
-        if (message.getSentDate().compareTo(chat.getNewestMessageDate()) == 1) {
+        if (chat.getNewestMessageDate() == null || message.getSentDate().compareTo(chat.getNewestMessageDate()) == 1) {
             chat.setNewestMessageId(message.getId());
             chat.setNewestMessageDate(message.getSentDate());
             chatRepository.save(chat);

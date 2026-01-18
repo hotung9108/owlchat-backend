@@ -94,10 +94,10 @@ public class ChatMemberUserController {
         // requester id
         // chat id
         // member id
-    @GetMapping("/chat/{chatId}")
-    public ResponseEntity<?> getChatMemberByChatIdAndMemberId(@RequestHeader String requesterId, @PathVariable String chatId) {
+    @GetMapping("/{memberId}/chat/{chatId}")
+    public ResponseEntity<?> getChatMemberByChatIdAndMemberId(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId) {
         try {
-            return ResponseEntity.ok().body(getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId));
+            return ResponseEntity.ok().body(getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, memberId, chatId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

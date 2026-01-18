@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
-import com.owl.chat_service.application.service.user.chat_member.GetChatMemberUserServices;
+import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
 import com.owl.chat_service.domain.chat.validate.ChatValidate;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.repository.ChatRepository;
@@ -20,16 +20,16 @@ import com.owl.chat_service.presentation.dto.user.ChatUserRequest;
 public class ControlChatUserServices {
     private final ControlChatAdminServices controlChatAdminServices;
     private final ControlChatMemberAdminSerivces controlChatMemberAdminSerivces;
-    private final GetChatMemberUserServices getChatMemberUserServices;
     private final GetChatAdminServices getChatAdminServices;
     private final ChatRepository chatRepository;
+    private final GetChatMemberAdminServices getChatMemberAdminServices;
 
-    public ControlChatUserServices(ControlChatAdminServices controlChatAdminServices, ControlChatMemberAdminSerivces controlChatMemberAdminSerivces, GetChatMemberUserServices getChatMemberUserServices, GetChatAdminServices getChatAdminServices, ChatRepository chatRepository) {
+    public ControlChatUserServices(ControlChatAdminServices controlChatAdminServices, ControlChatMemberAdminSerivces controlChatMemberAdminSerivces, GetChatAdminServices getChatAdminServices, ChatRepository chatRepository, GetChatMemberAdminServices getChatMemberAdminServices) {
         this.controlChatAdminServices = controlChatAdminServices;
         this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;
-        this.getChatMemberUserServices = getChatMemberUserServices;
         this.getChatAdminServices = getChatAdminServices;
         this.chatRepository = chatRepository;
+        this.getChatMemberAdminServices = getChatMemberAdminServices;
     }
 
     public Chat addNewChat(String requesterId, ChatUserRequest chatRequest) {
@@ -59,6 +59,8 @@ public class ControlChatUserServices {
             chatMemberRequest.chatId = newChat.getId();
             if (memberId == requesterId)
                 chatMemberRequest.role = "OWNER";
+            else if (request.type == "PRIVATE")
+                chatMemberRequest.role = "OWNER";
             else 
                 chatMemberRequest.role = "MEMBER";
             chatMemberRequest.inviterId = requesterId;
@@ -69,7 +71,7 @@ public class ControlChatUserServices {
     }
 
     public Chat updateChatName(String requesterId, String chatId, String name) {
-        ChatMember chatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
 
         if (chatMember == null)
             throw new SecurityException("Requester does not have permission to access this chat");
@@ -85,7 +87,7 @@ public class ControlChatUserServices {
     }
 
     public void deleteChat(String requesterId, String chatId) {
-        ChatMember chatMember = getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, chatId);
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
 
         if (chatMember == null)
             throw new SecurityException("Requester does not have permission to access this chat");

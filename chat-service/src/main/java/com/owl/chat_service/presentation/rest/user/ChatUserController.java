@@ -66,14 +66,14 @@ public class ChatUserController {
             return ResponseEntity.ok().body(getChatUserServices.getChatsByMemberId(requesterId, memberId, keywords, page, size, ascSort, type, joinDateStart, joinDateEnd));
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e);
         }
     }
     
     // get chat by chat id
         // requester id
         // member id
-    @GetMapping("/chat/{chatId}")
+    @GetMapping("/{chatId}")
     public ResponseEntity<?> getChatByChatId(@RequestHeader String requesterId, @PathVariable String chatId) {
         try {
             return ResponseEntity.ok().body(getChatUserServices.getChatById(requesterId, chatId));

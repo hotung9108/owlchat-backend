@@ -83,7 +83,7 @@ public class GetChatUserServices {
         if (!ChatValidate.validateChatId(chatId))
             throw new IllegalArgumentException("Invalid chat id");
 
-        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(requesterId, chatId) != null) 
+        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId) == null) 
             throw new SecurityException("Requester does not have permission to access this chat");
 
         return chatRepository.findById(Objects.requireNonNull(chatId, "Chat id is null")).orElse(null);
