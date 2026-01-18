@@ -1,16 +1,19 @@
 package com.owl.chat_service.application.service.user.chat;
 
-import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
+import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.validate.ChatValidate;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.repository.ChatRepository;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
+import com.owl.chat_service.persistence.mongodb.document.ChatMember.ChatMemberRole;
 import com.owl.chat_service.presentation.dto.admin.ChatAdminRequest;
 import com.owl.chat_service.presentation.dto.admin.ChatMemberAdminRequest;
 import com.owl.chat_service.presentation.dto.user.ChatUserRequest;
@@ -90,8 +93,20 @@ public class ControlChatUserServices {
         ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
 
         if (chatMember == null)
+            throw new SecurityException("Requester does not have permission to delete this chat");
+
+        controlChatAdminServices.softDeleteChat(chatId);
+    }
+    
+    public void updateChatAvatarFile(String requesterId, String chatId, MultipartFile file) {
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
+
+        if (chatMember == null)
             throw new SecurityException("Requester does not have permission to access this chat");
 
-        chatRepository.deleteById(Objects.requireNonNull(chatId, "Chat id is null"));
+        if (ChatMemberServices.compareRole(chatMember.getRole(), ChatMemberRole.ADMIN) < 0)
+            throw new SecurityException("Requester does not have permission to set this chat avatar");
+
+        controlChatAdminServices.updateChatAvatarFile(chatId, file);
     }
 }

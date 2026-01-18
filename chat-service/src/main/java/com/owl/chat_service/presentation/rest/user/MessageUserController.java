@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import com.owl.chat_service.application.service.user.message.ControlMessageUserServices;
 import com.owl.chat_service.application.service.user.message.GetMessageUserServices;
-import com.owl.chat_service.presentation.dto.ChatAvatarData;
+import com.owl.chat_service.presentation.dto.ResourceData;
 import com.owl.chat_service.presentation.dto.FileMessageUserRequest;
 import com.owl.chat_service.presentation.dto.MessageUpdateContentRequest;
 import com.owl.chat_service.presentation.dto.TextMessageUserRequest;
@@ -92,7 +92,7 @@ public class MessageUserController {
     @GetMapping("/{messageId}/resource")
     public ResponseEntity<?> getMessageFile(@RequestHeader String requesterId, @PathVariable String messageId) {
         try {
-            ChatAvatarData data = new ChatAvatarData();
+            ResourceData data = new ResourceData();
 
             String mediaType = data.contentType /* avatar mediaType */;
             

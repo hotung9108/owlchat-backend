@@ -1,6 +1,7 @@
 package com.owl.chat_service.application.service.admin.chat_member;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -169,5 +170,13 @@ public class ControlChatMemberAdminSerivces {
             throw new IllegalArgumentException("Chat member does not exists");
 
         chatMemberRepository.deleteById(Objects.requireNonNull(existingChatMember.getId(), "Delete chat member id is null"));
+    }
+
+    public void deleteChatMemberByChatId(String chatId) {
+        List<ChatMember> chatMembers = getChatMemberAdminServices.getChatMembersByChatId(chatId, -1, 0, false);
+
+        for (ChatMember chatMember : chatMembers) {
+            deleteChatMember(chatId, chatMember.getMemberId());
+        }
     }
 }

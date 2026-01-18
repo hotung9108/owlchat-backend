@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
-
+import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
 import com.owl.chat_service.domain.chat.validate.ChatMemberValidate;
 import com.owl.chat_service.domain.chat.validate.ChatValidate;
@@ -19,17 +19,21 @@ import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
 import com.owl.chat_service.persistence.mongodb.repository.ChatRepository;
 import com.owl.chat_service.persistence.mongodb.repository.ChatWithCriteriaRepository;
+import com.owl.chat_service.presentation.dto.ResourceData;
 
 @Service
 public class GetChatUserServices {
+
+    private final GetChatAdminServices getChatAdminServices;
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final ChatRepository chatRepository;
     private final ChatWithCriteriaRepository chatWithCriteriaRepository;
 
-    public GetChatUserServices(GetChatMemberAdminServices getChatMemberAdminServices, ChatRepository chatRepository, ChatWithCriteriaRepository chatWithCriteriaRepository) {
+    public GetChatUserServices(GetChatMemberAdminServices getChatMemberAdminServices, ChatRepository chatRepository, ChatWithCriteriaRepository chatWithCriteriaRepository, GetChatAdminServices getChatAdminServices) {
         this.getChatMemberAdminServices = getChatMemberAdminServices;
         this.chatRepository = chatRepository;
-        this.chatWithCriteriaRepository = chatWithCriteriaRepository;}
+        this.chatWithCriteriaRepository = chatWithCriteriaRepository;
+        this.getChatAdminServices = getChatAdminServices;}
 
     public List<Chat> getChatsByMemberId(
         String requesterId, 
@@ -87,5 +91,14 @@ public class GetChatUserServices {
             throw new SecurityException("Requester does not have permission to access this chat");
 
         return chatRepository.findById(Objects.requireNonNull(chatId, "Chat id is null")).orElse(null);
+    }
+
+    public ResourceData getChatAvatar(String requesterId, String chatId) {
+        Chat chat = getChatById(requesterId, chatId);
+
+        if (chat == null) 
+            throw new IllegalArgumentException("Chat not found");
+
+        return getChatAdminServices.getChatAvatarFile(chatId);
     }
 }

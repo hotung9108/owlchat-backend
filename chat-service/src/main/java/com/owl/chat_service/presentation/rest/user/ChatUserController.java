@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 import com.owl.chat_service.application.service.user.chat.ControlChatUserServices;
 import com.owl.chat_service.application.service.user.chat.GetChatUserServices;
-import com.owl.chat_service.presentation.dto.ChatAvatarData;
+import com.owl.chat_service.presentation.dto.ResourceData;
 import com.owl.chat_service.presentation.dto.ChatUpdateNameRequest;
 import com.owl.chat_service.presentation.dto.user.ChatUserRequest;
 
@@ -89,7 +89,7 @@ public class ChatUserController {
     @GetMapping("/{chatId}/avatar")
     public ResponseEntity<?> getChatAvatar(@RequestHeader String requesterId, @PathVariable String chatId) {
         try {
-            ChatAvatarData data = new ChatAvatarData();
+            ResourceData data = getChatUserServices.getChatAvatar(requesterId, chatId);
 
             String mediaType = data.contentType /* avatar mediaType */;
             
@@ -139,6 +139,7 @@ public class ChatUserController {
     @PostMapping(value = "/{chatId}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> patchChatAvatar(@RequestHeader String requesterId, @PathVariable String chatId, @RequestPart("file") MultipartFile avatarFile) {
         try {
+            controlChatUserServices.updateChatAvatarFile(requesterId, chatId, avatarFile);
             return ResponseEntity.ok("Upload avatar successfully");
         }
         catch (Exception e) {

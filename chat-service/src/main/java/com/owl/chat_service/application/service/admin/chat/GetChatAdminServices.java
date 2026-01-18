@@ -8,11 +8,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
+import com.owl.chat_service.domain.chat.service.ChatServices;
 import com.owl.chat_service.persistence.mongodb.criteria.ChatCriteria;
 import com.owl.chat_service.persistence.mongodb.criteria.PagintaionCriteria;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.repository.ChatRepository;
 import com.owl.chat_service.persistence.mongodb.repository.ChatWithCriteriaRepository;
+import com.owl.chat_service.presentation.dto.ResourceData;
 
 @Service
 public class GetChatAdminServices {
@@ -62,5 +64,9 @@ public class GetChatAdminServices {
 
         return chatRepository.findById(chatId).orElse(null);
     }
-    
+    public ResourceData getChatAvatarFile(String chatId) {
+        String avatar = getChatById(chatId).getAvatar();
+
+        return ChatServices.loadAvatar(avatar);
+    }    
 }

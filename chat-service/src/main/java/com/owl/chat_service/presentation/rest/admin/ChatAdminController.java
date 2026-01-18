@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
-import com.owl.chat_service.presentation.dto.ChatAvatarData;
+import com.owl.chat_service.presentation.dto.ResourceData;
 import com.owl.chat_service.presentation.dto.admin.ChatAdminRequest;
 
 import java.time.Instant;
@@ -86,7 +86,7 @@ public class ChatAdminController {
     @GetMapping("/{chatId}/avatar")
     public ResponseEntity<?> getChatAvatar(@PathVariable String chatId) {
         try {
-            ChatAvatarData data = new ChatAvatarData();
+            ResourceData data = getChatAdminServices.getChatAvatarFile(chatId);
 
             String mediaType = data.contentType /* avatar mediaType */;
             
@@ -142,9 +142,10 @@ public class ChatAdminController {
     // patch chat avatar
         // chat id
         // chat avatar
-    @PostMapping(value = "/{id}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> patchChatAvatar(@PathVariable String id, @RequestPart("file") MultipartFile avatarFile) {
+    @PostMapping(value = "/{chatId}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> patchChatAvatar(@PathVariable String chatId, @RequestPart("file") MultipartFile avatarFile) {
         try {
+            controlChatAdminService.updateChatAvatarFile(chatId, avatarFile);
             return ResponseEntity.ok("Upload avatar successfully");
         }
         catch (Exception e) {

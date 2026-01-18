@@ -6,7 +6,9 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.multipart.MultipartFile;
+import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
+import com.owl.chat_service.domain.chat.service.ChatServices;
 import com.owl.chat_service.domain.chat.validate.ChatValidate;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.Message;
@@ -17,12 +19,15 @@ import com.owl.chat_service.presentation.dto.admin.ChatAdminRequest;
 @Service
 @Transactional
 public class ControlChatAdminServices {
+
+    private final ControlChatMemberAdminSerivces controlChatMemberAdminSerivces;
     private final GetChatAdminServices getChatAdminServices;
     private final ChatRepository chatRepository;
 
-    public ControlChatAdminServices(ChatRepository chatRepository, GetChatAdminServices getChatAdminServices) {
+    public ControlChatAdminServices(ChatRepository chatRepository, GetChatAdminServices getChatAdminServices, ControlChatMemberAdminSerivces controlChatMemberAdminSerivces) {
         this.getChatAdminServices = getChatAdminServices;
-        this.chatRepository = chatRepository;}
+        this.chatRepository = chatRepository;
+        this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;}
 
     public Chat addNewChat(ChatAdminRequest chatRequest) {
         Chat newChat = new Chat();
@@ -85,6 +90,20 @@ public class ControlChatAdminServices {
         return chatRepository.save(existingChat);
     }
 
+    public void softDeleteChat(String chatId) {
+        if (!ChatValidate.validateChatId(chatId))
+            throw new IllegalArgumentException("Invalid chat id");
+
+        Chat existingChat = getChatAdminServices.getChatById(chatId);
+
+        if (existingChat == null) 
+            throw new IllegalArgumentException("Chat does not exists");
+
+        updateChatStatus(chatId, false);
+
+        controlChatMemberAdminSerivces.deleteChatMemberByChatId(chatId);
+    }
+
     public void deleteChat(String chatId) {
         if (!ChatValidate.validateChatId(chatId))
             throw new IllegalArgumentException("Invalid chat id");
@@ -94,7 +113,11 @@ public class ControlChatAdminServices {
         if (existingChat == null) 
             throw new IllegalArgumentException("Chat does not exists");
 
+        deleteChatAvatarFile(existingChat.getAvatar());
+
         chatRepository.deleteById(Objects.requireNonNull(existingChat.getId(), "Delete chat is null"));
+
+        controlChatMemberAdminSerivces.deleteChatMemberByChatId(chatId);
     }
 
     public void updateChatNewestMessage(Message message) {
@@ -120,5 +143,35 @@ public class ControlChatAdminServices {
             chat.setNewestMessageDate(message.getSentDate());
             chatRepository.save(chat);
         }
+    }
+
+    public void updateChatAvatarFile(String chatId, MultipartFile file) {
+        Chat existingChat = getChatAdminServices.getChatById(chatId);
+
+        if (existingChat == null) {
+            throw new IllegalArgumentException("Chat not found");
+        }
+
+        ChatValidate.validateAvatarFileMetaData(file);
+
+        ChatValidate.validateAvatarFileType(file);
+
+        String avatar = existingChat.getAvatar();
+
+        if (avatar != null && !avatar.isEmpty()) {
+            deleteChatAvatarFile(avatar);
+        }
+
+        existingChat.setAvatar(ChatServices.saveChatAvatarFile(file));
+
+        chatRepository.save(existingChat);
+    }
+
+    public void deleteChatAvatarFile(String avatarFileName) {
+        if (avatarFileName == null || avatarFileName.isEmpty()) {
+            throw new IllegalArgumentException("Chat does not have avatar");
+        }
+
+        ChatServices.deleteFile(avatarFileName);
     }
 }
