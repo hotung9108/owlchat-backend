@@ -12,6 +12,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.owl.chat_service.infrastructure.config.ChatServicesConfig;
+import com.owl.chat_service.infrastructure.config.MessageServicesConfig;
 import com.owl.chat_service.presentation.dto.ResourceData;
 
 public class FileUtils {
@@ -80,5 +81,18 @@ public class FileUtils {
         else {
             throw new IllegalArgumentException("User profile avatar not found");
         }
+    }
+
+    public static boolean isImage(String mimeType) {
+        return MessageServicesConfig.IMAGE_TYPES.contains(mimeType);
+    }
+
+    public static boolean isVideo(String mimeType) {
+        return MessageServicesConfig.VIDEO_TYPES.contains(mimeType);
+    }
+
+    public static boolean isGenericFile(String mimeType) {
+        return !mimeType.startsWith("image/")
+                && !mimeType.startsWith("video/");
     }
 }

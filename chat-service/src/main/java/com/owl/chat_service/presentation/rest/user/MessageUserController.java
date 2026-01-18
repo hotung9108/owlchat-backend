@@ -3,12 +3,15 @@ package com.owl.chat_service.presentation.rest.user;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.owl.chat_service.application.service.user.message.ControlMessageUserServices;
 import com.owl.chat_service.application.service.user.message.GetMessageUserServices;
 import com.owl.chat_service.presentation.dto.ResourceData;
 import com.owl.chat_service.presentation.dto.FileMessageUserRequest;
 import com.owl.chat_service.presentation.dto.MessageUpdateContentRequest;
 import com.owl.chat_service.presentation.dto.TextMessageUserRequest;
+import com.owl.chat_service.presentation.dto.admin.FileMessageAdminRequest;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -92,7 +96,7 @@ public class MessageUserController {
     @GetMapping("/{messageId}/resource")
     public ResponseEntity<?> getMessageFile(@RequestHeader String requesterId, @PathVariable String messageId) {
         try {
-            ResourceData data = new ResourceData();
+            ResourceData data = getMessageUserServices.getMessageFile(requesterId, messageId);
 
             String mediaType = data.contentType /* avatar mediaType */;
             
@@ -127,10 +131,14 @@ public class MessageUserController {
         // chat id
         // type
         // file
-    @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> postNewFileMessage(@RequestHeader String requesterId, @RequestBody FileMessageUserRequest fileMessageRequest) {
+    @PostMapping(value = "/resource/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> postNewFileMessage(@RequestHeader String requesterId,  @RequestHeader String chatId, @RequestHeader String type, @RequestPart("file") MultipartFile file) {
         try {
-            return ResponseEntity.ok("Upload avatar successfully");
+            FileMessageUserRequest fileMessageRequest = new FileMessageAdminRequest();
+            fileMessageRequest.chatId = chatId;
+            fileMessageRequest.type = type;
+            fileMessageRequest.file = file;
+            return ResponseEntity.ok().body(controlMessageUserServices.addNewFileMessage(requesterId, fileMessageRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

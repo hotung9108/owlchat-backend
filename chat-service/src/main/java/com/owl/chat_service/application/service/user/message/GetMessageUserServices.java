@@ -13,6 +13,7 @@ import com.owl.chat_service.persistence.mongodb.criteria.MessageCriteria;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.Message;
 import com.owl.chat_service.persistence.mongodb.document.Message.MessageState;
+import com.owl.chat_service.presentation.dto.ResourceData;
 
 @Service
 public class GetMessageUserServices {
@@ -71,5 +72,14 @@ public class GetMessageUserServices {
             throw new SecurityException("Requester does not have permission to access this message");
 
         return message;
+    }
+
+    public ResourceData getMessageFile(String requesterId, String messageId) {
+        Message message = getMessageById(requesterId, messageId);
+
+        if (message == null) 
+            throw new IllegalArgumentException("Message not found");
+
+        return getMessageAdminServices.getMessageFile(messageId);
     }
 }

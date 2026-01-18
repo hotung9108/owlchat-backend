@@ -2,12 +2,16 @@ package com.owl.chat_service.application.service.user.message;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Objects;
 import com.owl.chat_service.application.service.admin.message.ControlMessageAdminServices;
 import com.owl.chat_service.application.service.user.chat.GetChatUserServices;
 import com.owl.chat_service.persistence.mongodb.document.Message;
 import com.owl.chat_service.persistence.mongodb.repository.MessageRepository;
+import com.owl.chat_service.presentation.dto.FileMessageUserRequest;
 import com.owl.chat_service.presentation.dto.TextMessageUserRequest;
+import com.owl.chat_service.presentation.dto.admin.FileMessageAdminRequest;
+import com.owl.chat_service.presentation.dto.admin.TextMessageAdminRequest;
 
 @Service
 @Transactional
@@ -25,7 +29,12 @@ public class ControlMessageUserServices {
         if (getChatUserServices.getChatById(requesterId, textMessageRequest.chatId) == null)
             throw new IllegalArgumentException("Chat not found");
 
-        return controlMessageAdminServices.addNewTextMessage(requesterId, textMessageRequest);
+        TextMessageAdminRequest request = new TextMessageAdminRequest();
+        request.chatId = textMessageRequest.chatId;
+        request.content = textMessageRequest.content;
+        request.senderId = requesterId;
+
+        return controlMessageAdminServices.addNewTextMessage(request);
     }
 
     public Message editTextMessage(String requesterId, String messageId, String content) {
@@ -50,5 +59,18 @@ public class ControlMessageUserServices {
             throw new SecurityException("Requester does not have permission to delete this message");
 
         controlMessageAdminServices.softDeleteMessage(messageId);
+    }
+
+    public Message addNewFileMessage(String requesterId, FileMessageUserRequest fileMessageRequest) {
+        if (getChatUserServices.getChatById(requesterId, fileMessageRequest.chatId) == null)
+            throw new IllegalArgumentException("Chat not found");
+
+        FileMessageAdminRequest request = new FileMessageAdminRequest();
+        request.chatId = fileMessageRequest.chatId;
+        request.type = fileMessageRequest.type;
+        request.file = fileMessageRequest.file;
+        request.senderId = requesterId;
+
+        return controlMessageAdminServices.addNewFileMessage(request);
     }
 }

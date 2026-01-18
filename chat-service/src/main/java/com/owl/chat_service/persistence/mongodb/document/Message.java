@@ -29,7 +29,7 @@ public class Message {
         TEXT,
         IMG,
         VID,
-        DOC
+        GENERIC_FILE
     }
     private MessageType type;
 

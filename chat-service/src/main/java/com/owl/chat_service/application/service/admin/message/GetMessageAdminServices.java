@@ -8,11 +8,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
+import com.owl.chat_service.domain.chat.service.MessageServices;
 import com.owl.chat_service.persistence.mongodb.criteria.MessageCriteria;
 import com.owl.chat_service.persistence.mongodb.criteria.PagintaionCriteria;
 import com.owl.chat_service.persistence.mongodb.document.Message;
 import com.owl.chat_service.persistence.mongodb.repository.MessageRepository;
 import com.owl.chat_service.persistence.mongodb.repository.MessageWithCriteriaRepository;
+import com.owl.chat_service.presentation.dto.ResourceData;
 
 @Service
 public class GetMessageAdminServices {
@@ -116,5 +118,14 @@ public class GetMessageAdminServices {
             throw new IllegalArgumentException("Message id cannot be null");
 
         return messageRepository.findById(id).orElse(null);
+    }
+
+    public ResourceData getMessageFile(String messageId) {
+        Message message = getMessageById(messageId);
+
+        if (message == null)
+            throw new IllegalArgumentException("Message not found");
+
+        return MessageServices.loadMessageFile(message.getType(), message.getContent());
     }
 }

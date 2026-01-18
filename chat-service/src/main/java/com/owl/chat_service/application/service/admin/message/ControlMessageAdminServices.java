@@ -9,12 +9,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
+import com.owl.chat_service.domain.chat.service.MessageServices;
 import com.owl.chat_service.domain.chat.validate.MessageValidate;
 import com.owl.chat_service.persistence.mongodb.document.Message;
 import com.owl.chat_service.persistence.mongodb.document.Message.MessageState;
 import com.owl.chat_service.persistence.mongodb.document.Message.MessageType;
 import com.owl.chat_service.persistence.mongodb.repository.MessageRepository;
-import com.owl.chat_service.presentation.dto.TextMessageUserRequest;
+import com.owl.chat_service.presentation.dto.admin.FileMessageAdminRequest;
+import com.owl.chat_service.presentation.dto.admin.TextMessageAdminRequest;
 
 @Service
 @Transactional
@@ -31,8 +33,8 @@ public class ControlMessageAdminServices {
         this.controlChatAdminService = controlChatAdminService;
     }
 
-    public Message addNewTextMessage(String senderId, TextMessageUserRequest textMessageRequest) {
-        if (!MessageValidate.validateSenderId(senderId)) {
+    public Message addNewTextMessage(TextMessageAdminRequest textMessageRequest) {
+        if (!MessageValidate.validateSenderId(textMessageRequest.senderId)) {
             throw new IllegalArgumentException("Invalid sender id");
         }
 
@@ -55,9 +57,9 @@ public class ControlMessageAdminServices {
         newMessage.setState(MessageState.ORIGIN);
         newMessage.setType(MessageType.TEXT);
         newMessage.setContent(textMessageRequest.content);
-        newMessage.setSenderId(senderId);
+        newMessage.setSenderId(textMessageRequest.senderId);
         newMessage.setSentDate(Instant.now());
-        newMessage.setCreatedDate(Instant.now());
+        newMessage.setCreatedDate(newMessage.getSentDate());
 
         messageRepository.save(newMessage);
 
@@ -146,6 +148,51 @@ public class ControlMessageAdminServices {
             throw new IllegalArgumentException("Message not found");
         }
 
+        MessageType type = existingMessage.getType();
+        if (type == MessageType.IMG || type == MessageType.VID || type == MessageType.GENERIC_FILE) {
+            MessageServices.deleteMessageFile(type, existingMessage.getContent());
+        }
+
         messageRepository.deleteById(Objects.requireNonNull(messageId, "Message id cannot be null"));
+    }
+
+    public Message addNewFileMessage(FileMessageAdminRequest fileMessageRequest) {
+        if (!MessageValidate.validateSenderId(fileMessageRequest.senderId)) {
+            throw new IllegalArgumentException("Invalid sender id");
+        }
+
+        if (!MessageValidate.validateChatId(fileMessageRequest.chatId)) {
+            throw new IllegalArgumentException("Invalid chat id");
+        }
+
+        if (getChatAdminServices.getChatById(fileMessageRequest.chatId) == null) {
+            throw new IllegalArgumentException("Chat does not exists");
+        }
+
+        if (!MessageValidate.ValidateType(fileMessageRequest.type))
+            throw new IllegalArgumentException("Invalid type");
+
+        MessageType type = MessageValidate.validateFileMetaData(fileMessageRequest.file);
+        if (type != MessageType.valueOf(fileMessageRequest.type)) {
+            throw new IllegalArgumentException("Message type and file type do not match");
+        }
+        
+        Message newMessage = new Message();
+        newMessage.setId(UUID.randomUUID().toString());
+        newMessage.setChatId(fileMessageRequest.chatId);
+        newMessage.setStatus(true);
+        newMessage.setState(MessageState.ORIGIN);
+        newMessage.setType(type);
+        newMessage.setSenderId(fileMessageRequest.senderId);
+        newMessage.setSentDate(Instant.now());
+        newMessage.setCreatedDate(newMessage.getSentDate());
+
+        newMessage.setContent(MessageServices.saveMessageFile(type, fileMessageRequest.file));
+
+        messageRepository.save(newMessage);
+
+        controlChatAdminService.updateChatNewestMessage(newMessage);
+
+        return newMessage;
     }
 }
