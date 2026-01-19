@@ -2,17 +2,18 @@ package com.owl.user_service.domain.service;
 
 import com.owl.user_service.infrastructure.utils.JwtUtil;
 import org.springframework.stereotype.Service;
-import java.util.Map;
-
 @Service
 public class AuthService {
-
-    public String generateAccessToken(String username, Map<String, Object> claims) {
-        return JwtUtil.generateAccessToken(username, claims);
+    public boolean verifyPassword(String rawPassword, String storedPassword) {
+        return rawPassword.equals(storedPassword);
     }
 
-    public String generateRefreshToken(String username) {
-        return JwtUtil.generateRefreshToken(username);
+    public String generateAccessToken(String username,String role, String accountId) {
+        return JwtUtil.generateAccessToken(username,role, accountId);
+    }
+
+    public String generateRefreshToken(String accountId) {
+        return JwtUtil.generateRefreshToken(accountId);
     }
 
     public boolean validateToken(String token) {

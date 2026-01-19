@@ -17,10 +17,14 @@ public class JwtUtil {
     private static final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     // Generate Access Token
-    public static String generateAccessToken(String username, Map<String, Object> claims) {
+    public static String generateAccessToken(String username, String role, String accountID) {
+        Map<String, Object> claims = Map.of(
+        "role", role,
+        "username", username
+    );
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(username)
+                .setSubject(accountID)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -28,9 +32,9 @@ public class JwtUtil {
     }
 
     // Generate Refresh Token
-    public static String generateRefreshToken(String username) {
+    public static String generateRefreshToken(String accountID) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(accountID)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -55,5 +59,34 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public static Date extractExpiration(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration(); 
+    }
+
+    // Extract Role from Token
+    public static String extractRole(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class); 
+    }
+
+    // Extract AccountID from Token
+    public static String extractAccountID(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject(); 
     }
 }
