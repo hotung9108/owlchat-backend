@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.social_service.domain.validate.FriendshipValidate;
 import com.owl.social_service.persistence.mongodb.document.Friendship;
@@ -11,6 +12,7 @@ import com.owl.social_service.persistence.mongodb.repository.FriendshipRepositor
 import com.owl.social_service.presentation.dto.FriendshipCreateRequest;
 
 @Service
+@Transactional
 public class ControlFriendshipAdminServices {
     private final FriendshipRepository friendshipRepository;
     private final GetFriendshipAdminServices getFriendshipAdminServices;

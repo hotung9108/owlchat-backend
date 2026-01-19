@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 
+import com.owl.social_service.application.user.GetFriendshipUserServies;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/friendship")
 public class FriendshipUserController {
-    public FriendshipUserController() {}
+
+    private final GetFriendshipUserServies getFriendshipUserServies;
+    public FriendshipUserController(GetFriendshipUserServies getFriendshipUserServies) {
+        this.getFriendshipUserServies = getFriendshipUserServies;
+    }
 
     @GetMapping("")
     public ResponseEntity<?> getFriendships(
@@ -24,16 +29,16 @@ public class FriendshipUserController {
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) String keywords,
+        // @RequestParam(required = false) String keywords,
         @RequestParam(required = false) Instant createdDateStart,
         @RequestParam(required = false) Instant createdDateEnd
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getFriendshipUserServies.getFriendshipsOfUser(requesterId, page, size, ascSort, createdDateStart, createdDateEnd));
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -44,10 +49,10 @@ public class FriendshipUserController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getFriendshipUserServies.getFrienshipById(requesterId, id));
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -58,10 +63,10 @@ public class FriendshipUserController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(getFriendshipUserServies.getFriendshipWithUser(requesterId, userId));
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
