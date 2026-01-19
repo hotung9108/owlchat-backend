@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 
+import com.owl.social_service.application.user.ControlFriendshipUserServices;
 import com.owl.social_service.application.user.GetFriendshipUserServies;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,9 +19,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/friendship")
 public class FriendshipUserController {
 
+    private final ControlFriendshipUserServices controlFriendshipUserServices;
+
     private final GetFriendshipUserServies getFriendshipUserServies;
-    public FriendshipUserController(GetFriendshipUserServies getFriendshipUserServies) {
+    public FriendshipUserController(GetFriendshipUserServies getFriendshipUserServies, ControlFriendshipUserServices controlFriendshipUserServices) {
         this.getFriendshipUserServies = getFriendshipUserServies;
+        this.controlFriendshipUserServices = controlFriendshipUserServices;
     }
 
     @GetMapping("")
@@ -77,10 +81,11 @@ public class FriendshipUserController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            controlFriendshipUserServices.deleteFriendship(requesterId, id);
+            return ResponseEntity.ok().body("Friendship deleted successfully");
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
