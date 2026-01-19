@@ -22,19 +22,10 @@ public class GetFriendshipAdminServices {
 
     public GetFriendshipAdminServices(CriteriaRepository criteriaRepository, FriendshipRepository friendshipRepository) {
         this.friendshipRepository = friendshipRepository;
-        this.criteriaRepository = criteriaRepository;}
+        this.criteriaRepository = criteriaRepository;
+    }
 
-    public List<Friendship> getFriendships(
-        int page,
-        int size,
-        boolean ascSort,
-        String keywords,
-        Instant createdDateStart,
-        Instant createdDateEnd
-    ) 
-    {
-        Criteria criteria = FriendshipCriteria.findAll(keywords, createdDateStart, createdDateEnd);
-
+    public List<Friendship> getFriendshipWithCriteria(Criteria criteria, int page, int size, boolean ascSort) {
         Sort sort = Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "id");
 
         if (page == -1){
@@ -50,6 +41,20 @@ public class GetFriendshipAdminServices {
             return criteriaRepository.findAll(Friendship.class, criteria, pageable);
         else
             return criteriaRepository.findAll(Friendship.class, pageable);
+    }
+    
+    public List<Friendship> getFriendships(
+        int page,
+        int size,
+        boolean ascSort,
+        String keywords,
+        Instant createdDateStart,
+        Instant createdDateEnd
+    ) 
+    {
+        Criteria criteria = FriendshipCriteria.findAll(true, keywords, createdDateStart, createdDateEnd);
+
+        return getFriendshipWithCriteria(criteria, page, size, ascSort);
     }
 
     public List<Friendship> getFriendshipsByUserId(
@@ -65,23 +70,9 @@ public class GetFriendshipAdminServices {
         if (!FriendshipValidate.validateUserId(userId))
             throw new IllegalArgumentException("Invalid user id");
 
-        Criteria criteria = FriendshipCriteria.findByUserId(userId, keywords, createdDateStart, createdDateEnd);
+        Criteria criteria = FriendshipCriteria.findByUserId(true, userId, keywords, createdDateStart, createdDateEnd);
 
-        Sort sort = Sort.by(ascSort ? Sort.Direction.ASC : Sort.Direction.DESC, "id");
-
-        if (page == -1){
-            if (criteria != null)
-                return criteriaRepository.findAll(Friendship.class, criteria, sort);
-            else
-                return criteriaRepository.findAll(Friendship.class, sort);
-        }
-
-        Pageable pageable = PagintaionCriteria.PagableCriteria(page, size, ascSort, "id");
-    
-        if (criteria != null)
-            return criteriaRepository.findAll(Friendship.class, criteria, pageable);
-        else
-            return criteriaRepository.findAll(Friendship.class, pageable);
+        return getFriendshipWithCriteria(criteria, page, size, ascSort);
     }
 
     public Friendship getFriendshipByUsersId(
@@ -95,7 +86,7 @@ public class GetFriendshipAdminServices {
         if (!FriendshipValidate.validateUserId(secondUserId))
             throw new IllegalArgumentException("Invalid second user id");
 
-        return friendshipRepository.findByFirstUserIdAndSecondUserId(firstUserId, secondUserId).orElse(null);
+        return friendshipRepository.findByFirstUserIdAndSecondUserId(firstUserId, secondUserId).orElse(friendshipRepository.findByFirstUserIdAndSecondUserId(secondUserId, firstUserId).orElse(null));
     }
 
     public Friendship getFriendshipById(String id) {

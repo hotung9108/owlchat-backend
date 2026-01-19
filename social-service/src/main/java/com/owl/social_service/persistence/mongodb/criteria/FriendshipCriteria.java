@@ -12,6 +12,7 @@ import com.owl.social_service.infrastructure.utils.KeywordUtils;
 
 public class FriendshipCriteria {
     public static Criteria findAll(
+        boolean idSearch,
         String keywords,
         Instant createdDateStart,
         Instant createdDateEnd
@@ -32,6 +33,13 @@ public class FriendshipCriteria {
                     Criteria.where("secondUserId")
                     .regex(Pattern.compile(".*" + Pattern.quote(keyword) + ".*", Pattern.CASE_INSENSITIVE))
                 );
+                
+                if (idSearch) {
+                    keywordsCriteriaList.add(
+                        Criteria.where("id")
+                        .regex(Pattern.compile(".*" + Pattern.quote(keyword) + ".*", Pattern.CASE_INSENSITIVE))
+                    );
+                }
             }
             criteriaList.add(new Criteria().orOperator(keywordsCriteriaList));
         }
@@ -44,7 +52,7 @@ public class FriendshipCriteria {
                 dateCriteria.gte(Objects.requireNonNull(createdDateStart, "createdDateStart cannot be null"));
             }
             if (createdDateEnd != null) {
-                dateCriteria.gte(Objects.requireNonNull(createdDateEnd, "createdDateEnd cannot be null"));
+                dateCriteria.lte(Objects.requireNonNull(createdDateEnd, "createdDateEnd cannot be null"));
             }
 
             criteriaList.add(dateCriteria);
@@ -54,6 +62,7 @@ public class FriendshipCriteria {
     }
 
     public static Criteria findByUserId(
+        boolean idSearch,
         String userId,
         String keywords,
         Instant createdDateStart,
@@ -70,7 +79,7 @@ public class FriendshipCriteria {
             ));
         }
 
-        Criteria criteria = findAll(keywords, createdDateStart, createdDateEnd);
+        Criteria criteria = findAll(idSearch, keywords, createdDateStart, createdDateEnd);
         if (criteria != null)
             criteriaList.add(criteria);
 

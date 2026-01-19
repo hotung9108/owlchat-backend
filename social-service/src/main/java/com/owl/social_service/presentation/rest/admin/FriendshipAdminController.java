@@ -2,7 +2,7 @@ package com.owl.social_service.presentation.rest.admin;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.owl.social_service.application.admin.ControlFriendshipAdminServices;
 import com.owl.social_service.application.admin.GetFriendshipAdminServices;
 import com.owl.social_service.presentation.dto.FriendshipCreateRequest;
 
@@ -20,10 +20,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/admin/friendship")
 public class FriendshipAdminController {
+
+    private final ControlFriendshipAdminServices controlFriendshipAdminServices;
     private final GetFriendshipAdminServices getFriendshipAdminServices;
 
-    public FriendshipAdminController(GetFriendshipAdminServices getFriendshipAdminServices) {
-        this.getFriendshipAdminServices = getFriendshipAdminServices;}
+    public FriendshipAdminController(GetFriendshipAdminServices getFriendshipAdminServices, ControlFriendshipAdminServices controlFriendshipAdminServices) {
+        this.getFriendshipAdminServices = getFriendshipAdminServices;
+        this.controlFriendshipAdminServices = controlFriendshipAdminServices;}
 
     @GetMapping("")
     public ResponseEntity<?> getFriendships(
@@ -93,7 +96,7 @@ public class FriendshipAdminController {
     public ResponseEntity<?>  postFriendship(@RequestBody FriendshipCreateRequest friendshipCreateRequest) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlFriendshipAdminServices.addNewFriendship(friendshipCreateRequest));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -104,7 +107,8 @@ public class FriendshipAdminController {
     public ResponseEntity<?>  deleteFriendshipById(@PathVariable String id) 
     {
         try {
-            return ResponseEntity.ok().body(null);
+            controlFriendshipAdminServices.deleteFriendship(id);
+            return ResponseEntity.ok().body("Friendship deleted successfully");
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
