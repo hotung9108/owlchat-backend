@@ -1,11 +1,13 @@
-package com.owl.user_service.infrastructure.utils;
-
+package com.owl.api_gateway.utils;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
+
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 
 public class JwtUtil {
 
@@ -18,9 +20,8 @@ public class JwtUtil {
     // Generate Access Token
     public static String generateAccessToken(String username, String role, String accountID) {
         Map<String, Object> claims = Map.of(
-        "role", role,
-        "username", username
-    );
+                "role", role,
+                "username", username);
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(accountID)
@@ -66,7 +67,7 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getExpiration(); 
+                .getExpiration();
     }
 
     // Extract Role from Token
@@ -76,7 +77,7 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("role", String.class); 
+                .get("role", String.class);
     }
 
     // Extract AccountID from Token
@@ -86,6 +87,6 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject(); 
+                .getSubject();
     }
 }
