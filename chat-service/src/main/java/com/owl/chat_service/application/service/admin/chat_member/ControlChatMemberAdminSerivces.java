@@ -42,6 +42,9 @@ public class ControlChatMemberAdminSerivces {
         if (chat == null) 
             throw new IllegalArgumentException("Chat does not exists");
 
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
+
         int numberOfMember = getChatMemberAdminServices.getChatMembersByChatId(chat.getId(), -1, 0, true).size();
 
         if (chat.getType() == ChatType.PRIVATE) {
@@ -95,8 +98,12 @@ public class ControlChatMemberAdminSerivces {
         if (!ChatMemberValidate.validateChatId(chatMemberRequest.chatId)) 
             throw new IllegalArgumentException("Invalid update chat id");
 
-        if (getChatAdminServices.getChatById(chatMemberRequest.chatId) == null) 
+        Chat chat = getChatAdminServices.getChatById(chatMemberRequest.chatId);
+        if (chat == null) 
             throw new IllegalArgumentException("Chat does not exists");
+
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
 
         if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId, chatMemberRequest.memberId) != null) 
             throw new IllegalArgumentException("Chat member already exists");
@@ -122,6 +129,13 @@ public class ControlChatMemberAdminSerivces {
 
         if (!ChatMemberValidate.validateChatId(chatId)) 
             throw new IllegalArgumentException("Invalid chat id");
+
+        Chat chat = getChatAdminServices.getChatById(chatId);
+        if (chat == null) 
+            throw new IllegalArgumentException("Chat does not exists");
+
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
 
         ChatMember existingChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
@@ -163,6 +177,13 @@ public class ControlChatMemberAdminSerivces {
 
         if (!ChatMemberValidate.validateChatId(chatId)) 
             throw new IllegalArgumentException("Invalid chat id");
+
+        Chat chat = getChatAdminServices.getChatById(chatId);
+        if (chat == null) 
+            throw new IllegalArgumentException("Chat does not exists");
+
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
 
         ChatMember existingChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 

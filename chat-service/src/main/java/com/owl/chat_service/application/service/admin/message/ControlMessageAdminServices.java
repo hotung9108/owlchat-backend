@@ -11,6 +11,7 @@ import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServi
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.domain.chat.service.MessageServices;
 import com.owl.chat_service.domain.chat.validate.MessageValidate;
+import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.Message;
 import com.owl.chat_service.persistence.mongodb.document.Message.MessageState;
 import com.owl.chat_service.persistence.mongodb.document.Message.MessageType;
@@ -42,9 +43,13 @@ public class ControlMessageAdminServices {
             throw new IllegalArgumentException("Invalid chat id");
         }
 
-        if (getChatAdminServices.getChatById(textMessageRequest.chatId) == null) {
+        Chat exitstingChat = getChatAdminServices.getChatById(textMessageRequest.chatId);
+        if (exitstingChat == null) {
             throw new IllegalArgumentException("Chat does not exists");
         }
+
+        if (!exitstingChat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
 
         if (!MessageValidate.validateContent(textMessageRequest.content)) {
             throw new IllegalArgumentException("Invalid content");
@@ -165,9 +170,13 @@ public class ControlMessageAdminServices {
             throw new IllegalArgumentException("Invalid chat id");
         }
 
-        if (getChatAdminServices.getChatById(fileMessageRequest.chatId) == null) {
+        Chat exitstingChat = getChatAdminServices.getChatById(fileMessageRequest.chatId);
+        if (exitstingChat == null) {
             throw new IllegalArgumentException("Chat does not exists");
         }
+
+        if (!exitstingChat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
 
         if (!MessageValidate.ValidateType(fileMessageRequest.type))
             throw new IllegalArgumentException("Invalid type");

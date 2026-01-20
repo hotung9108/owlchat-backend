@@ -46,6 +46,9 @@ public class GetMessageUserServices {
         if (chat == null) 
             throw new IllegalArgumentException("Chat not found");
 
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
+
         Criteria criteria = MessageCriteria.FindMessagesByChatIdAndSenderIdWithCriteria(true, chatId, senderId, keywords, null, null, type, sentDateStart, sentDateEnd, null, null, null, null);
 
         List<Message> messages = getMessageAdminServices.getMessages(criteria, page, size, ascSort);
