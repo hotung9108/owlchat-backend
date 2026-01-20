@@ -3,8 +3,9 @@ package com.owl.social_service.presentation.rest.user;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.owl.social_service.application.user.ControlFriendRequestUserServices;
 import com.owl.social_service.application.user.GetFriendRequestUserServices;
-import com.owl.social_service.presentation.dto.FriendRequestCreateRequest;
+import com.owl.social_service.presentation.dto.FriendRequestCreateUserRequest;
 import com.owl.social_service.presentation.dto.FriendRequestResponseRequest;
 
 import java.time.Instant;
@@ -24,9 +25,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/friend-request")
 public class FriendRequestUserController {
     private final GetFriendRequestUserServices getFriendRequestUserServices;
+    private final ControlFriendRequestUserServices controlFriendRequestUserServices;
 
-    public FriendRequestUserController(GetFriendRequestUserServices getFriendRequestUserServices) {
-        this.getFriendRequestUserServices = getFriendRequestUserServices;}
+    public FriendRequestUserController(GetFriendRequestUserServices getFriendRequestUserServices, ControlFriendRequestUserServices controlFriendRequestUserServices) {
+        this.getFriendRequestUserServices = getFriendRequestUserServices;
+        this.controlFriendRequestUserServices = controlFriendRequestUserServices;
+    }
 
     @GetMapping("")
     public ResponseEntity<?> getFriendRequests(
@@ -160,9 +164,9 @@ public class FriendRequestUserController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> postFriendRequest(@RequestBody FriendRequestCreateRequest request) {
+    public ResponseEntity<?> postFriendRequest(@RequestHeader String requesterId, @RequestBody FriendRequestCreateUserRequest request) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlFriendRequestUserServices.addNewFriendRequest(requesterId, request.receiverId));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -170,9 +174,9 @@ public class FriendRequestUserController {
     }
 
     @PatchMapping("/{id}/response")
-    public ResponseEntity<?> patchFriendRequestStatus(@PathVariable String id, @RequestBody FriendRequestResponseRequest request) {
+    public ResponseEntity<?> patchFriendRequestStatus(@RequestHeader String requesterId, @PathVariable String id, @RequestBody FriendRequestResponseRequest request) {
         try {
-            return ResponseEntity.ok().body(null);
+            return ResponseEntity.ok().body(controlFriendRequestUserServices.updateFriendRequest(requesterId, id, request.response));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -180,9 +184,10 @@ public class FriendRequestUserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteFriendRequest(@PathVariable String id) 
+    public ResponseEntity<?> deleteFriendRequest(@RequestHeader String requesterId, @PathVariable String id) 
     {
         try {
+            controlFriendRequestUserServices.deleteFriendRequest(requesterId, id);
             return ResponseEntity.ok().body("Friend request deleted successfully");
         }
         catch (Exception e) {
