@@ -44,7 +44,7 @@ public class GetBlockUserServices {
         if (existingBlock == null)
             throw new IllegalArgumentException("Block not found");
 
-        if (existingBlock.getBlockedId() != requesterId)
+        if (existingBlock.getBlockerId().compareTo(requesterId) != 0)
             throw new SecurityException("Requester does not have permission to access this block");
 
         return existingBlock;

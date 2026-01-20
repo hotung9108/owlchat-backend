@@ -22,12 +22,14 @@ public class ControlFriendRequestAdminServices {
     private final GetFriendRequestAdminServices getFriendRequestAdminServices;
     private final GetFriendshipAdminServices getFriendshipAdminServices;
     private final ControlFriendshipAdminServices controlFriendshipAdminServices;
+    private final GetBlockAdminServices getBlockAdminServices;
 
-    public ControlFriendRequestAdminServices(FriendRequestRepository friendRequestRepository, GetFriendRequestAdminServices getFriendRequestAdminServices, GetFriendshipAdminServices getFriendshipAdminServices, ControlFriendshipAdminServices controlFriendshipAdminServices) {
+    public ControlFriendRequestAdminServices(FriendRequestRepository friendRequestRepository, GetFriendRequestAdminServices getFriendRequestAdminServices, GetFriendshipAdminServices getFriendshipAdminServices, ControlFriendshipAdminServices controlFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices) {
         this.friendRequestRepository = friendRequestRepository;
         this.getFriendRequestAdminServices = getFriendRequestAdminServices;
         this.getFriendshipAdminServices = getFriendshipAdminServices;
         this.controlFriendshipAdminServices = controlFriendshipAdminServices;
+        this.getBlockAdminServices = getBlockAdminServices;
     }
 
     public FriendRequest addNewFriendRequest(FriendRequestCreateRequest request) {
@@ -44,7 +46,11 @@ public class ControlFriendRequestAdminServices {
         if (existingFriendship != null) 
             throw new IllegalArgumentException("Friendship already exists");
 
-        // validate block
+        if (getBlockAdminServices.getUserBlockUser(request.senderId, request.receiverId) != null)
+            throw new IllegalArgumentException("Requester have block this user");
+
+        if (getBlockAdminServices.getUserBlockUser(request.receiverId, request.senderId) != null)
+            throw new IllegalArgumentException("This user have block requester");
 
         FriendRequest newFriendRequest = new FriendRequest();
         newFriendRequest.setId(UUID.randomUUID().toString());

@@ -5,20 +5,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 
+import com.owl.social_service.application.admin.ControlBlockAdminServices;
 import com.owl.social_service.application.admin.GetBlockAdminServices;
+import com.owl.social_service.presentation.dto.BlockCreateRequest;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
 @RequestMapping("/admin/block")
 public class BlockAdminController {
 
+    private final ControlBlockAdminServices controlBlockAdminServices;
+
     private final GetBlockAdminServices getBlockAdminServices;
-    public BlockAdminController(GetBlockAdminServices getBlockAdminServices) {
+    public BlockAdminController(GetBlockAdminServices getBlockAdminServices, ControlBlockAdminServices controlBlockAdminServices) {
         this.getBlockAdminServices = getBlockAdminServices;
+        this.controlBlockAdminServices = controlBlockAdminServices;
     }
 
     @GetMapping("")
@@ -100,4 +109,29 @@ public class BlockAdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("")
+    public ResponseEntity<?> postBlock(@RequestBody BlockCreateRequest request) {
+        try {
+            return ResponseEntity.ok().body(controlBlockAdminServices.addNewBlock(request));
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteBlock(
+        @PathVariable String id
+    ) 
+    {
+        try {
+            controlBlockAdminServices.deleteBlock(id);
+            return ResponseEntity.ok().body("Block deleted successfully");
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

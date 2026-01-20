@@ -16,10 +16,12 @@ import com.owl.social_service.presentation.dto.FriendshipCreateRequest;
 public class ControlFriendshipAdminServices {
     private final FriendshipRepository friendshipRepository;
     private final GetFriendshipAdminServices getFriendshipAdminServices;
+    private final GetBlockAdminServices getBlockAdminServices;
 
-    public ControlFriendshipAdminServices(FriendshipRepository friendshipRepository, GetFriendshipAdminServices getFriendshipAdminServices) {
+    public ControlFriendshipAdminServices(FriendshipRepository friendshipRepository, GetFriendshipAdminServices getFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices) {
         this.friendshipRepository = friendshipRepository;
-        this.getFriendshipAdminServices = getFriendshipAdminServices;}
+        this.getFriendshipAdminServices = getFriendshipAdminServices;
+        this.getBlockAdminServices = getBlockAdminServices;}
 
     public Friendship addNewFriendship(FriendshipCreateRequest request) {
         if (!FriendshipValidate.validateUserId(request.firstUserId))
@@ -31,7 +33,11 @@ public class ControlFriendshipAdminServices {
         if (getFriendshipAdminServices.getFriendshipByUsersId(request.firstUserId, request.secondUserId) != null) 
             throw new IllegalArgumentException("Friendship already exists");
 
-        // validate block
+        if (getBlockAdminServices.getUserBlockUser(request.firstUserId, request.secondUserId) != null)
+            throw new IllegalArgumentException("Have been blocked");
+
+        if (getBlockAdminServices.getUserBlockUser(request.secondUserId, request.firstUserId) != null)
+            throw new IllegalArgumentException("Have been blocked");
 
         Friendship newFriendship = new Friendship();
         newFriendship.setId(UUID.randomUUID().toString());
