@@ -12,6 +12,8 @@ import com.owl.user_service.presentation.dto.request.auth.AuthRequest;
 import com.owl.user_service.presentation.dto.request.auth.AuthResponse;
 import com.owl.user_service.presentation.dto.request.auth.RefreshTokenRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 // import org.springframework.http.ResponseEntity;
 // import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +26,8 @@ public class AuthController {
     public AuthController(ControlAuthService controlAuthService) {
         this.controlAuthService = controlAuthService;
     }
-
+    @Operation(summary = "Login", security = {})
     @PostMapping("/login")
-
     public ResponseEntity<?> Login(@RequestBody AuthRequest authRequest) {
         try {
             AuthResponse authResponse = controlAuthService.login(authRequest);
@@ -63,8 +64,8 @@ public class AuthController {
         // return ResponseEntity.ok("Logged out successfully");
     }
 
-    @GetMapping
-    public List<RefreshToken> getAllRefreshTokens() {
-        return controlAuthService.getAllRefreshTokens();
-    }
+    // @GetMapping
+    // public List<RefreshToken> getAllRefreshTokens() {
+    //     return controlAuthService.getAllRefreshTokens();
+    // }
 }

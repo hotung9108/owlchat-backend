@@ -8,6 +8,9 @@ import com.owl.user_service.application.service.user_profile.GetUserProfileServi
 import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.LocalDate;
 
 import org.springframework.http.ResponseEntity;
@@ -20,88 +23,78 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
-
 @RestController
 @RequestMapping("/profile")
 public class UserProfileController {
     private final GetUserProfileServices getUserProfileService;
     private final ControlUserProfileServices controlUserProfileServices;
 
-    public UserProfileController(GetUserProfileServices getUserProfileService, ControlUserProfileServices controlUserProfileServices) {
+    public UserProfileController(GetUserProfileServices getUserProfileService,
+            ControlUserProfileServices controlUserProfileServices) {
         this.getUserProfileService = getUserProfileService;
         this.controlUserProfileServices = controlUserProfileServices;
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("")
     public ResponseEntity getProfiles(
-        @RequestParam(required = false, defaultValue = "") String keywords, 
-        @RequestParam(required = false, defaultValue = "0") int page, 
-        @RequestParam(required = false, defaultValue = "10") int size, 
-        @RequestParam(required =  false, defaultValue = "0") int gender, 
-        @RequestParam(required =  false, defaultValue = "") LocalDate dateOfBirthStart, 
-        @RequestParam(required =  false, defaultValue = "") LocalDate dateOfBirthEnd, 
-        @RequestParam(required =  false, defaultValue = "true") boolean ascSort
-    ) 
-    {
-        try 
-        {
-            return ResponseEntity.ok(getUserProfileService.getUserProfiles(keywords, page, size, gender, dateOfBirthStart, dateOfBirthEnd, ascSort));    
-        }
-        catch (Exception e) {
+            @RequestParam(required = false, defaultValue = "") String keywords,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "0") int gender,
+            @RequestParam(required = false, defaultValue = "") LocalDate dateOfBirthStart,
+            @RequestParam(required = false, defaultValue = "") LocalDate dateOfBirthEnd,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort) {
+        try {
+            return ResponseEntity.ok(getUserProfileService.getUserProfiles(keywords, page, size, gender,
+                    dateOfBirthStart, dateOfBirthEnd, ascSort));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}")
     public ResponseEntity getProfileById(@PathVariable String id) {
-        try 
-        {
-            return ResponseEntity.ok(getUserProfileService.getUserProfileById(id));    
-        }
-        catch (IllegalArgumentException e) {
+        try {
+            return ResponseEntity.ok(getUserProfileService.getUserProfileById(id));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("")
     public ResponseEntity addNewProfile(@RequestBody UserProfileCreateRequest userProfileCreateRequest) {
-        try 
-        {
-            return ResponseEntity.ok(controlUserProfileServices.addUserProfile(userProfileCreateRequest));    
-        }
-        catch (Exception e) {
+        try {
+            return ResponseEntity.ok(controlUserProfileServices.addUserProfile(userProfileCreateRequest));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
     public ResponseEntity updateProfile(@PathVariable String id, @RequestBody UserProfileRequest userProfileRequest) {
         try {
             return ResponseEntity.ok(controlUserProfileServices.updateUserProfile(id, userProfileRequest));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{id}/avatar")
     public ResponseEntity updateAvatar(@PathVariable String id, @RequestBody String avatar) {
         try {
             return ResponseEntity.ok(controlUserProfileServices.updateAvataUserProfile(id, avatar));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProfile(@PathVariable String id) {
-        try 
-        {
+        try {
             controlUserProfileServices.deleteUserProfile(id);
-            return ResponseEntity.ok("User profile deleted successfully");  
-        }
-        catch (Exception e) {
+            return ResponseEntity.ok("User profile deleted successfully");
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
