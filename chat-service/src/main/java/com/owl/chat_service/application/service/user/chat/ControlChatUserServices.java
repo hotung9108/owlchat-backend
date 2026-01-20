@@ -84,6 +84,9 @@ public class ControlChatUserServices {
 
         Chat chat = getChatAdminServices.getChatById(chatId);
 
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
+
         chat.setName(name);
 
         return chatRepository.save(chat);

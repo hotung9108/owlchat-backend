@@ -99,6 +99,9 @@ public class GetChatUserServices {
         if (chat == null) 
             throw new IllegalArgumentException("Chat not found");
 
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
+
         return getChatAdminServices.getChatAvatarFile(chatId);
     }
 }

@@ -9,6 +9,7 @@ import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
 import com.owl.chat_service.domain.chat.validate.ChatMemberValidate;
 import com.owl.chat_service.persistence.mongodb.criteria.ChatMemberCriteria;
+import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
 
 @Service
@@ -73,8 +74,12 @@ public class GetChatMemberUserServices {
         if (!ChatMemberValidate.validateMemberId(memberId))
             throw new IllegalArgumentException("Invalid chat id");
 
-        if (getChatAdminServices.getChatById(chatId) == null)
+        Chat chat = getChatAdminServices.getChatById(chatId);
+        if (chat == null)
             throw new IllegalArgumentException("Chat not found");
+
+        if (!chat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
 
         if (!ChatMemberValidate.validateRequesterAndMemberAreSame(requesterId, memberId)) {
             if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId) == null)
