@@ -19,6 +19,12 @@ import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(
+    origins = "http://localhost:8080",
+    allowedHeaders = "*",
+    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+    allowCredentials = "true"
+)
 public class AuthController {
 
     private final ControlAuthService controlAuthService;

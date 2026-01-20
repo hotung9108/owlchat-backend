@@ -2,13 +2,11 @@ package com.owl.user_service.domain.service;
 
 import com.owl.user_service.persistence.jpa.entity.RefreshToken;
 import com.owl.user_service.persistence.jpa.repository.RefreshTokenRepository;
-import com.owl.user_service.infrastructure.utils.JwtUtil;
 import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
