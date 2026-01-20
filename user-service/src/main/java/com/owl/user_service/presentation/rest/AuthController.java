@@ -17,6 +17,12 @@ import com.owl.user_service.presentation.dto.request.auth.RefreshTokenRequest;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(
+    origins = "http://localhost:8080",
+    allowedHeaders = "*",
+    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+    allowCredentials = "true"
+)
 public class AuthController {
 
     private final ControlAuthService controlAuthService;
