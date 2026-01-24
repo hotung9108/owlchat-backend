@@ -8,13 +8,17 @@ import com.owl.user_service.application.service.account.GetAccountServices;
 import com.owl.user_service.application.service.user_profile.ControlUserProfileServices;
 import com.owl.user_service.presentation.dto.request.AccountRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
 @RequestMapping("/account")
 @CrossOrigin(
     origins = "http://localhost:8080",
     allowedHeaders = "*",
     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
-    allowCredentials = "true"
+    // allowCredentials = "true"
+    allowCredentials = "false"
 )
 public class AccountController {
     private final GetAccountServices getAccountServices;
@@ -26,7 +30,7 @@ public class AccountController {
         this.controlAccountServices = _controlAccountServices;
         this.controlUserProfileServices = _controlUserProfileServices;
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("")
     public ResponseEntity<?> getAccounts(
         @RequestParam(required = false, defaultValue = "") String keywords, 
@@ -43,7 +47,7 @@ public class AccountController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-    
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}")
     public ResponseEntity<?> getAccountById(@PathVariable String id) {
         try {
@@ -63,7 +67,7 @@ public class AccountController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAccount(@PathVariable String id, @RequestBody AccountRequest accountRequest) {
         try {
@@ -73,7 +77,7 @@ public class AccountController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PatchMapping("/{id}/status/{status}")
     public ResponseEntity<?> updateAccountStatus(@PathVariable String id, @PathVariable boolean status) {
         try {
@@ -82,7 +86,7 @@ public class AccountController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @DeleteMapping("{id}")
     public ResponseEntity<String> deleteAccount(@PathVariable String id) {
         try {
