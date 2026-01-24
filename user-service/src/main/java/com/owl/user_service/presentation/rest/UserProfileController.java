@@ -12,6 +12,9 @@ import com.owl.user_service.application.service.user_profile.GetUserProfileServi
 import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.LocalDate;
 
 import org.springframework.http.HttpStatus;
@@ -28,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
-
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(
@@ -41,11 +43,13 @@ public class UserProfileController {
     private final GetUserProfileServices getUserProfileService;
     private final ControlUserProfileServices controlUserProfileServices;
 
-    public UserProfileController(GetUserProfileServices getUserProfileService, ControlUserProfileServices controlUserProfileServices) {
+    public UserProfileController(GetUserProfileServices getUserProfileService,
+            ControlUserProfileServices controlUserProfileServices) {
         this.getUserProfileService = getUserProfileService;
         this.controlUserProfileServices = controlUserProfileServices;
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("")
     public ResponseEntity<?> getProfiles(
         @RequestParam(required = false, defaultValue = "") String keywords, 
@@ -65,7 +69,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}")
     public ResponseEntity<?> getProfileById(@PathVariable String id) {
         try 
@@ -76,7 +80,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("")
     public ResponseEntity<?> addNewProfile(@RequestBody UserProfileCreateRequest userProfileCreateRequest) {
         try 
@@ -121,12 +125,10 @@ public class UserProfileController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProfile(@PathVariable String id) {
-        try 
-        {
+        try {
             controlUserProfileServices.deleteUserProfile(id);
-            return ResponseEntity.ok("User profile deleted successfully");  
-        }
-        catch (Exception e) {
+            return ResponseEntity.ok("User profile deleted successfully");
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
