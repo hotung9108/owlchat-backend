@@ -45,6 +45,11 @@ public class ControlChatMemberAdminSerivces {
         if (!chat.getStatus())
             throw new IllegalArgumentException("Chat have been removed");
 
+        if (chatMemberRequest.inviterId != null && !chatMemberRequest.inviterId.isBlank()) {
+            if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId, chatMemberRequest.inviterId) == null)
+                throw new SecurityException("Inviter does not have permission to access this chat");
+        }
+
         int numberOfMember = getChatMemberAdminServices.getChatMembersByChatId(chat.getId(), -1, 0, true).size();
 
         if (chat.getType() == ChatType.PRIVATE) {

@@ -79,6 +79,9 @@ public class ControlChatUserServices {
         if (chatMember == null)
             throw new SecurityException("Requester does not have permission to access this chat");
 
+        if (ChatMemberServices.compareRole(chatMember.getRole(), ChatMemberRole.ADMIN) < 0) 
+            throw new SecurityException("Requester does not have permission to rename this chat");
+
         if (!ChatValidate.validateName(name)) 
             throw new IllegalArgumentException("Invalid name");
 
@@ -96,6 +99,9 @@ public class ControlChatUserServices {
         ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId);
 
         if (chatMember == null)
+            throw new SecurityException("Requester does not have permission to delete this chat");
+
+        if (ChatMemberServices.compareRole(chatMember.getRole(), ChatMemberRole.OWNER) < 0) 
             throw new SecurityException("Requester does not have permission to delete this chat");
 
         controlChatAdminServices.softDeleteChat(chatId);
