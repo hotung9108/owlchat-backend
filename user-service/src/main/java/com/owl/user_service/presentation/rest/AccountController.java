@@ -13,13 +13,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("/account")
-@CrossOrigin(
-    origins = "http://localhost:8080",
-    allowedHeaders = "*",
-    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
-    // allowCredentials = "true"
-    allowCredentials = "false"
-)
+// @CrossOrigin(
+//     origins = "http://localhost:8080",
+//     allowedHeaders = "*",
+//     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+//     // allowCredentials = "true"
+//     allowCredentials = "true"
+// )
 public class AccountController {
     private final GetAccountServices getAccountServices;
     private final ControlAccountServices controlAccountServices;

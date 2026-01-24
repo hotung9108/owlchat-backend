@@ -1,4 +1,4 @@
-package com.owl.chat_service.config;
+package com.owl.social_service.config;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                new Server().url("http://localhost:8080/chat-service")
+                new Server().url("http://localhost:8080/social-service")
             ))
 
                 .components(new Components()

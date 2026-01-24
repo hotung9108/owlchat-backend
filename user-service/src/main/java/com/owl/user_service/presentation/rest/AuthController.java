@@ -2,12 +2,10 @@ package com.owl.user_service.presentation.rest;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
 import com.owl.user_service.application.service.auth.ControlAuthService;
-import com.owl.user_service.persistence.jpa.entity.RefreshToken;
 import com.owl.user_service.presentation.dto.request.auth.AuthRequest;
 import com.owl.user_service.presentation.dto.request.auth.AuthResponse;
 import com.owl.user_service.presentation.dto.request.auth.RefreshTokenRequest;
@@ -19,12 +17,12 @@ import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(
-    origins = "http://localhost:8080",
-    allowedHeaders = "*",
-    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
-    allowCredentials = "true"
-)
+// @CrossOrigin(
+//     origins = "http://localhost:8080",
+//     allowedHeaders = "*",
+//     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+//     allowCredentials = "true"
+// )
 public class AuthController {
 
     private final ControlAuthService controlAuthService;

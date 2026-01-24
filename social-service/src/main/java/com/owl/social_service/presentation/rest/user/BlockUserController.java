@@ -6,6 +6,9 @@ import com.owl.social_service.application.user.ControlBlockUserServices;
 import com.owl.social_service.application.user.GetBlockUserServices;
 import com.owl.social_service.presentation.dto.BlockCreateUserRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +31,7 @@ public class BlockUserController {
         this.getBlockUserServices = getBlockUserServices;
         this.controlBlockUserServices = controlBlockUserServices;
     }
-    
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}")
     public ResponseEntity<?>  getBlockById(
         @RequestHeader String requesterId,
@@ -44,6 +47,7 @@ public class BlockUserController {
     }
 
     @GetMapping("/blocked")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getUserBlocked(
         @RequestHeader String requesterId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -62,6 +66,7 @@ public class BlockUserController {
     }
 
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postBlock(@RequestHeader String requesterId, @RequestBody BlockCreateUserRequest request) {
         try {
             return ResponseEntity.ok().body(controlBlockUserServices.addNewBlock(requesterId, request.blockedId));
@@ -72,6 +77,7 @@ public class BlockUserController {
     }
     
     @DeleteMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteBlock(
         @RequestHeader String requesterId,
         @PathVariable String id

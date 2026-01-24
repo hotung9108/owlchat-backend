@@ -6,6 +6,9 @@ import com.owl.social_service.application.admin.ControlFriendshipAdminServices;
 import com.owl.social_service.application.admin.GetFriendshipAdminServices;
 import com.owl.social_service.presentation.dto.FriendshipCreateRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.Instant;
 
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,7 @@ public class FriendshipAdminController {
         this.controlFriendshipAdminServices = controlFriendshipAdminServices;}
 
     @GetMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendships(
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
@@ -47,6 +51,7 @@ public class FriendshipAdminController {
     }
     
     @GetMapping("/user/{userId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?>  getFriendshipsByUserId(
         @PathVariable String userId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -66,6 +71,7 @@ public class FriendshipAdminController {
     }
     
     @GetMapping("/first-user/{firstUserId}/second-user/{secondUserId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?>  getFriendshipsByUsersId(
         @PathVariable String firstUserId,
         @PathVariable String secondUserId
@@ -80,6 +86,7 @@ public class FriendshipAdminController {
     }
     
     @GetMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?>  getFriendshipsById(
         @PathVariable String id
     ) 
@@ -93,6 +100,7 @@ public class FriendshipAdminController {
     }
     
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?>  postFriendship(@RequestBody FriendshipCreateRequest friendshipCreateRequest) 
     {
         try {
@@ -104,6 +112,7 @@ public class FriendshipAdminController {
     }
     
     @DeleteMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?>  deleteFriendshipById(@PathVariable String id) 
     {
         try {
