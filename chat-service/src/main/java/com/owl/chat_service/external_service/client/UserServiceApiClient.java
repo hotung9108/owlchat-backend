@@ -2,7 +2,6 @@ package com.owl.chat_service.external_service.client;
 
 import java.time.Duration;
 
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -20,13 +19,28 @@ public class UserServiceApiClient {
     }
 
     public UserProfileDto getUserById(String id) {
-        return webClient.get().uri("/user/{id}", id)
-            .retrieve()
-            .onStatus(HttpStatusCode::is4xxClientError,
-                response -> Mono.error(new RuntimeException("User not found")))
-            .onStatus(HttpStatusCode::is5xxServerError,
-                response -> Mono.error(new RuntimeException("External server error")))
-            .bodyToMono(UserProfileDto.class)
+        return webClient.get().uri("/user/" + id)
+            .exchangeToMono(response -> {
+                if (response == null)
+                    return Mono.empty();
+
+                if (response.statusCode().is2xxSuccessful()) {
+                    // If body is empty this will become an empty Mono -> block() returns null
+                    return response.bodyToMono(UserProfileDto.class);
+                }
+                if (response.statusCode().value() == 404) {
+                    // convert 404 into empty result
+                    return Mono.empty();
+                }
+                // propagate other errors as exceptions
+                if (response.statusCode().is4xxClientError())
+                    throw new RuntimeException("User not found");
+
+                if (response.statusCode().is5xxServerError())
+                    throw new RuntimeException("Server not found");
+
+                return Mono.empty();
+            })
             .timeout(Duration.ofSeconds(3))
             .block();
     }
