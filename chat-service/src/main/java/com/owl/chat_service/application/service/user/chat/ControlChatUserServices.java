@@ -56,17 +56,27 @@ public class ControlChatUserServices {
 
         Chat newChat = controlChatAdminServices.addNewChat(request);
 
+        ChatMemberAdminRequest chatMemberRequester = new ChatMemberAdminRequest();
+
+        chatMemberRequester.memberId = requesterId;
+        chatMemberRequester.chatId = newChat.getId();
+        chatMemberRequester.role = "OWNER";
+        chatMemberRequester.inviterId = null;
+        controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequester);
+
         for (String memberId : chatRequest.chatMembersId) {
             ChatMemberAdminRequest chatMemberRequest = new ChatMemberAdminRequest();
             chatMemberRequest.memberId = memberId;
             chatMemberRequest.chatId = newChat.getId();
-            if (memberId == requesterId)
-                chatMemberRequest.role = "OWNER";
+            chatMemberRequest.inviterId = requesterId;
+            if (memberId.compareToIgnoreCase(requesterId) == 0) {
+                continue;
+            }
             else if (request.type == "PRIVATE")
                 chatMemberRequest.role = "OWNER";
             else 
                 chatMemberRequest.role = "MEMBER";
-            chatMemberRequest.inviterId = requesterId;
+
             controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequest);
         }
 

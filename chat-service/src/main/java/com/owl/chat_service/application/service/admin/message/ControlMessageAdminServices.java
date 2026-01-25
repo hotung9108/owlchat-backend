@@ -13,6 +13,7 @@ import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberA
 import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.service.MessageServices;
 import com.owl.chat_service.domain.chat.validate.MessageValidate;
+import com.owl.chat_service.external_service.client.UserServiceApiClient;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
 import com.owl.chat_service.persistence.mongodb.document.Message;
@@ -31,18 +32,28 @@ public class ControlMessageAdminServices {
     private final GetMessageAdminServices getMessageAdminServices;
     private final ControlChatAdminServices controlChatAdminService;
     private final GetChatMemberAdminServices getChatMemberAdminServices;
+    private final UserServiceApiClient userServiceApiClient;
 
-    public ControlMessageAdminServices(MessageRepository messageRepository, GetChatAdminServices getChatAdminServices, GetMessageAdminServices getMessageAdminServices, ControlChatAdminServices controlChatAdminService, GetChatMemberAdminServices getChatMemberAdminServices) {
+    public ControlMessageAdminServices(MessageRepository messageRepository, GetChatAdminServices getChatAdminServices, GetMessageAdminServices getMessageAdminServices, ControlChatAdminServices controlChatAdminService, GetChatMemberAdminServices getChatMemberAdminServices, UserServiceApiClient userServiceApiClient) {
         this.messageRepository = messageRepository;
         this.getChatAdminServices = getChatAdminServices;
         this.getMessageAdminServices = getMessageAdminServices;
         this.controlChatAdminService = controlChatAdminService;
         this.getChatMemberAdminServices = getChatMemberAdminServices;
+        this.userServiceApiClient = userServiceApiClient;
     }
 
     public Message addNewTextMessage(TextMessageAdminRequest textMessageRequest) {
         if (!MessageValidate.validateSenderId(textMessageRequest.senderId)) {
             throw new IllegalArgumentException("Invalid sender id");
+        }
+
+        try {
+            if (userServiceApiClient.getUserById(textMessageRequest.senderId) == null) 
+                throw new IllegalArgumentException("Sender not found");
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
         }
 
         if (!MessageValidate.validateChatId(textMessageRequest.chatId)) {

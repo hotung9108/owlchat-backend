@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.domain.chat.validate.ChatMemberValidate;
+import com.owl.chat_service.external_service.client.UserServiceApiClient;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
 import com.owl.chat_service.persistence.mongodb.document.Chat.ChatType;
@@ -23,17 +24,27 @@ public class ControlChatMemberAdminSerivces {
     private final ChatMemberRepository chatMemberRepository;
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final GetChatAdminServices getChatAdminServices;
+    private final UserServiceApiClient userServiceApiClient;
 
-    public ControlChatMemberAdminSerivces(ChatMemberRepository chatMemberRepository, GetChatMemberAdminServices getChatMemberAdminServices, GetChatAdminServices getChatAdminServices) {
+    public ControlChatMemberAdminSerivces(ChatMemberRepository chatMemberRepository, GetChatMemberAdminServices getChatMemberAdminServices, GetChatAdminServices getChatAdminServices, UserServiceApiClient userServiceApiClient) {
         this.chatMemberRepository = chatMemberRepository;
         this.getChatMemberAdminServices = getChatMemberAdminServices;
-        this.getChatAdminServices = getChatAdminServices;}
+        this.getChatAdminServices = getChatAdminServices;
+        this.userServiceApiClient = userServiceApiClient;}
 
     public ChatMember addNewChatMember(ChatMemberAdminRequest chatMemberRequest) {
         ChatMember newChatMember = new ChatMember();
 
         if (!ChatMemberValidate.validateMemberId(chatMemberRequest.memberId)) 
             throw new IllegalArgumentException("Invalid member id");
+
+        try {
+            if (userServiceApiClient.getUserById(chatMemberRequest.memberId) == null) 
+                throw new IllegalArgumentException("Member not found");
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
 
         if (!ChatMemberValidate.validateChatId(chatMemberRequest.chatId)) 
             throw new IllegalArgumentException("Invalid chat id");

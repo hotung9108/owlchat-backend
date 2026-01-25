@@ -67,7 +67,6 @@ public class ChatAdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
 
     // get chat by id
         // chat id
