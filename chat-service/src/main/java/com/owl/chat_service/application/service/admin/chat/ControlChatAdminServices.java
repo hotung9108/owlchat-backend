@@ -19,7 +19,6 @@ import com.owl.chat_service.presentation.dto.admin.ChatAdminRequest;
 @Service
 @Transactional
 public class ControlChatAdminServices {
-
     private final ControlChatMemberAdminSerivces controlChatMemberAdminSerivces;
     private final GetChatAdminServices getChatAdminServices;
     private final ChatRepository chatRepository;
@@ -27,7 +26,8 @@ public class ControlChatAdminServices {
     public ControlChatAdminServices(ChatRepository chatRepository, GetChatAdminServices getChatAdminServices, ControlChatMemberAdminSerivces controlChatMemberAdminSerivces) {
         this.getChatAdminServices = getChatAdminServices;
         this.chatRepository = chatRepository;
-        this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;}
+        this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;
+    }
 
     public Chat addNewChat(ChatAdminRequest chatRequest) {
         Chat newChat = new Chat();
