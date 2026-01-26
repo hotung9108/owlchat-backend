@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
+import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.validate.ChatMemberValidate;
+import com.owl.chat_service.external_service.client.BlockUserServiceApiClient;
+import com.owl.chat_service.external_service.client.UserServiceApiClient;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
 import com.owl.chat_service.persistence.mongodb.document.Chat.ChatType;
@@ -20,20 +23,33 @@ import com.owl.chat_service.presentation.dto.admin.ChatMemberAdminRequest;
 @Service
 @Transactional
 public class ControlChatMemberAdminSerivces {
+
+    private final BlockUserServiceApiClient blockUserServiceApiClient;
     private final ChatMemberRepository chatMemberRepository;
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final GetChatAdminServices getChatAdminServices;
+    private final UserServiceApiClient userServiceApiClient;
 
-    public ControlChatMemberAdminSerivces(ChatMemberRepository chatMemberRepository, GetChatMemberAdminServices getChatMemberAdminServices, GetChatAdminServices getChatAdminServices) {
+    public ControlChatMemberAdminSerivces(ChatMemberRepository chatMemberRepository, GetChatMemberAdminServices getChatMemberAdminServices, GetChatAdminServices getChatAdminServices, UserServiceApiClient userServiceApiClient, BlockUserServiceApiClient blockUserServiceApiClient) {
         this.chatMemberRepository = chatMemberRepository;
         this.getChatMemberAdminServices = getChatMemberAdminServices;
-        this.getChatAdminServices = getChatAdminServices;}
+        this.getChatAdminServices = getChatAdminServices;
+        this.userServiceApiClient = userServiceApiClient;
+        this.blockUserServiceApiClient = blockUserServiceApiClient;}
 
     public ChatMember addNewChatMember(ChatMemberAdminRequest chatMemberRequest) {
         ChatMember newChatMember = new ChatMember();
 
         if (!ChatMemberValidate.validateMemberId(chatMemberRequest.memberId)) 
             throw new IllegalArgumentException("Invalid member id");
+
+        try {
+            if (userServiceApiClient.getUserById(chatMemberRequest.memberId) == null) 
+                throw new IllegalArgumentException("Member not found");
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
 
         if (!ChatMemberValidate.validateChatId(chatMemberRequest.chatId)) 
             throw new IllegalArgumentException("Invalid chat id");
@@ -44,6 +60,11 @@ public class ControlChatMemberAdminSerivces {
 
         if (!chat.getStatus())
             throw new IllegalArgumentException("Chat have been removed");
+
+        if (chatMemberRequest.inviterId != null && !chatMemberRequest.inviterId.isBlank()) {
+            if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId, chatMemberRequest.inviterId) == null)
+                throw new SecurityException("Inviter does not have permission to access this chat");
+        }
 
         int numberOfMember = getChatMemberAdminServices.getChatMembersByChatId(chat.getId(), -1, 0, true).size();
 
@@ -69,6 +90,15 @@ public class ControlChatMemberAdminSerivces {
 
         // if (!ChatMemberValidate.validateNickname(chatMemberRequest.nickname))
         //     throw new IllegalArgumentException("Invalid nickname");
+
+        try {
+            if (blockUserServiceApiClient.getUserBlockUser(chatMemberRequest.memberId, chatMemberRequest.inviterId) != null) {
+                throw new IllegalArgumentException("Inviter have been blocked by user");
+            }
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
 
         newChatMember.setId(UUID.randomUUID().toString());
         newChatMember.setMemberId(chatMemberRequest.memberId);
@@ -189,6 +219,9 @@ public class ControlChatMemberAdminSerivces {
 
         if (existingChatMember == null) 
             throw new IllegalArgumentException("Chat member does not exists");
+
+        if (ChatMemberServices.compareRole(existingChatMember.getRole(), ChatMemberRole.OWNER) == 0)
+            throw new IllegalArgumentException("Chat owner cannot leave chat");
 
         chatMemberRepository.deleteById(Objects.requireNonNull(existingChatMember.getId(), "Delete chat member id is null"));
     }
