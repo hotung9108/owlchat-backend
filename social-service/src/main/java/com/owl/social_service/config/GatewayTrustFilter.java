@@ -27,8 +27,7 @@ public class GatewayTrustFilter extends OncePerRequestFilter {
 
         String accountId = request.getHeader("X-Account-Id");
         if (accountId == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            accountId = "none";
         }
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(accountId, null,
                 List.of());

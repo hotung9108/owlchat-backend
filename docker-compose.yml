@@ -47,7 +47,7 @@
 #   owlchat-network:
 #     driver: bridge
 
-version: "3.9"
+# version: "3.9"
 
 services:
   api-gateway:
@@ -82,7 +82,9 @@ services:
     ports:
       - "8082:8082"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
+      # SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
+      SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/social_db
+
     depends_on:
       - chat-mongo
     networks:
@@ -95,6 +97,8 @@ services:
       - "27018:27017"
     volumes:
       - chat-mongo-data:/data/db
+    networks:
+      - owl-network
 
   social-service:
     build: 
@@ -104,19 +108,20 @@ services:
     ports:
       - "8083:8083"
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://social-mongo:27017/social_db
+      SPRING_DATA_MONGODB_URI: mongodb://social-mongo:27017/chat_db
     depends_on:
-      - social-mongo
+      # - social-mongo
+      - chat-mongo
     networks:
       - owl-network
 
-  social-mongo:
-    image: mongo:7
-    container_name: social-mongo
-    ports:
-      - "27019:27017"
-    volumes:
-      - social-mongo-data:/data/db
+  # social-mongo:
+  #   image: mongo:7
+  #   container_name: social-mongo
+  #   ports:
+  #     - "27019:27017"
+  #   volumes:
+  #     - social-mongo-data:/data/db
 
 networks:
   owl-network:

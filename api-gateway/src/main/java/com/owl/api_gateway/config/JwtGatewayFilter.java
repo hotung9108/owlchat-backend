@@ -14,7 +14,7 @@ import com.owl.api_gateway.utils.JwtUtil;
 import reactor.core.publisher.Mono;
 
 @Component
-public class JwtGatewayFilter implements GlobalFilter, Ordered {
+public class JwtGatewayFilter implements GlobalFilter, Ordered { 
     @Override
     public int getOrder() {
         return -1;
@@ -36,6 +36,8 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
         if (path.contains("/v3/api-docs")
                 || (path.equals("/user-service/account") && "POST".equalsIgnoreCase(method))
                 || path.contains("/swagger-ui")
+                || path.contains("/swagger-resources")
+                || path.contains("/webjars")
                 || path.contains("/auth")) {
             return chain.filter(exchange);
         }
@@ -53,7 +55,7 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
         String accountId = JwtUtil.extractAccountID(token);
         String username = JwtUtil.extractUsername(token);
         String role = JwtUtil.extractRole(token);
-
+        
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                 .header("X-Account-Id", accountId)
                 .header("X-Username", username)

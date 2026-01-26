@@ -17,7 +17,7 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                new Server().url("http://localhost:8080/social-service")
+                new Server().url("http://localhost:8083")
             ))
 
                 .components(new Components()

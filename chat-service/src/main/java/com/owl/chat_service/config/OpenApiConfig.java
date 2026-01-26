@@ -17,7 +17,7 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                new Server().url("http://localhost:8080/chat-service")
+                new Server().url("http://localhost:8082")
             ))
 
                 .components(new Components()
