@@ -38,8 +38,8 @@ services:
       - "8082:8082"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      # SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
-      SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/social_db
+      SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
+      # SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/social_db
 
     depends_on:
       - chat-mongo
@@ -65,7 +65,7 @@ services:
       - "8083:8083"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATA_MONGODB_URI: mongodb://social-mongo:27017/chat_db
+      SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
     depends_on:
       # - social-mongo
       - chat-mongo
@@ -85,4 +85,4 @@ networks:
     driver: bridge
 volumes:
   chat-mongo-data:
-  social-mongo-data:
+  # social-mongo-data:
