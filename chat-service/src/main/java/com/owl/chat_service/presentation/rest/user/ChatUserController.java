@@ -67,7 +67,7 @@ public class ChatUserController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(getChatUserServices.getChatsByMemberId(requesterId, memberId, keywords, page, size, ascSort, type, joinDateStart, joinDateEnd));
+            return ResponseEntity.ok().body(getChatUserServices.getChatsByMemberId(requesterId, keywords, page, size, ascSort, type, joinDateStart, joinDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e);
