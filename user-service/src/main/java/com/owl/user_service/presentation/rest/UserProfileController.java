@@ -11,6 +11,7 @@ import com.owl.user_service.application.service.user_profile.GetUserProfileServi
 import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.time.LocalDate;
