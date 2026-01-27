@@ -8,6 +8,9 @@ import com.owl.chat_service.presentation.dto.ChatMemberUpdateNicknameRequest;
 import com.owl.chat_service.presentation.dto.ChatMemberUpdateRoleRequest;
 import com.owl.chat_service.presentation.dto.admin.ChatMemberAdminRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.Instant;
 
 import org.springframework.http.ResponseEntity;
@@ -42,6 +45,7 @@ public class ChatMemberAdminController {
         // joinDateStart
         // joinDateEnd
     @GetMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatMember(
         @RequestParam(required = false) String keywords,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -70,6 +74,7 @@ public class ChatMemberAdminController {
         // joinDateStart
         // joinDateEnd
     @GetMapping("/chat/{chatId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatMemberByChatId(
         @PathVariable String chatId,
         @RequestParam(required = false) String keywords,
@@ -99,6 +104,7 @@ public class ChatMemberAdminController {
         // joinDateStart
         // joinDateEnd
     @GetMapping("/{memberId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatMemberByMemberId(
         @PathVariable String memberId,
         @RequestParam(required = false) String keywords,
@@ -122,6 +128,7 @@ public class ChatMemberAdminController {
         // chat id
         // member id
     @GetMapping("/{memberId}/chat/{chatId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMethodName(@PathVariable String memberId, @PathVariable String chatId) {
         try {
             return ResponseEntity.ok().body(getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId));
@@ -140,6 +147,7 @@ public class ChatMemberAdminController {
             // inviter id
             // join date
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postChatMember(@RequestBody ChatMemberAdminRequest chatMemberCreateRequest) {
         try {
             return ResponseEntity.ok().body(controlChatMemberAdminSerivces.addNewChatMember(chatMemberCreateRequest));
@@ -160,6 +168,7 @@ public class ChatMemberAdminController {
             // inviter id
             // join date
     @PutMapping("/{memberId}/chat/{chatId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> putChatMember(@PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberAdminRequest chatMemberRequest) {
         try {
             return ResponseEntity.ok().body(controlChatMemberAdminSerivces.updateChatMember(chatId, memberId, chatMemberRequest));
@@ -174,6 +183,7 @@ public class ChatMemberAdminController {
         // chat id
         // role
     @PatchMapping("/{memberId}/chat/{chatId}/role")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> patchChatMemberRole(@PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateRoleRequest role) {
         try {
             return ResponseEntity.ok().body(controlChatMemberAdminSerivces.updateChatMemberRole(chatId, memberId, role.role));
@@ -188,6 +198,7 @@ public class ChatMemberAdminController {
         // chat id
         // nickname
     @PatchMapping("/{memberId}/chat/{chatId}/nickname")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> patchChatMemberNickname(@PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateNicknameRequest nickname) {
         try {
             return ResponseEntity.ok().body(controlChatMemberAdminSerivces.updateChatMemberNickname(chatId, memberId, nickname.nickname));
@@ -201,6 +212,7 @@ public class ChatMemberAdminController {
         // member id
         // chat id 
     @DeleteMapping("/{memberId}/chat/{chatId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteChatMember(@PathVariable String memberId, @PathVariable String chatId) {
         try {
             controlChatMemberAdminSerivces.deleteChatMember(chatId, memberId);

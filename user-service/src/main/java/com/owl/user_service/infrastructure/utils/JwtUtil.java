@@ -57,7 +57,7 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();
+                .get("username",String.class);
     }
 
     public static Date extractExpiration(String token) {

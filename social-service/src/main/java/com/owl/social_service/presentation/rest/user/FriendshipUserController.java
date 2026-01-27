@@ -7,6 +7,10 @@ import java.time.Instant;
 
 import com.owl.social_service.application.user.ControlFriendshipUserServices;
 import com.owl.social_service.application.user.GetFriendshipUserServies;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +32,7 @@ public class FriendshipUserController {
     }
 
     @GetMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendships(
         @RequestHeader String requesterId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -47,6 +52,7 @@ public class FriendshipUserController {
     }
 
     @GetMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendshipById(
         @RequestHeader String requesterId,
         @PathVariable String id
@@ -61,6 +67,7 @@ public class FriendshipUserController {
     }
 
     @GetMapping("/user/{userId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendshipWithUser(
         @RequestHeader String requesterId,
         @PathVariable String userId
@@ -75,6 +82,7 @@ public class FriendshipUserController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteFriendship(
         @RequestHeader String requesterId,
         @PathVariable String id
