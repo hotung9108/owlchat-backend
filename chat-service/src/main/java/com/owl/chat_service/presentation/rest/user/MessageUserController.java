@@ -13,6 +13,9 @@ import com.owl.chat_service.presentation.dto.MessageUpdateContentRequest;
 import com.owl.chat_service.presentation.dto.TextMessageUserRequest;
 import com.owl.chat_service.presentation.dto.admin.FileMessageAdminRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -55,6 +58,7 @@ public class MessageUserController {
         // sentDateStart
         // sentDateEnd
     @GetMapping("/chat/{chatId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?>  getMessagesByChatId(
         @RequestHeader String requesterId,
         @PathVariable String chatId,
@@ -81,6 +85,7 @@ public class MessageUserController {
         // requester id
         // message id
     @GetMapping("/{messageId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMessageById(@RequestHeader String requesterId, @PathVariable String messageId) {
         try {
             return ResponseEntity.ok().body(getMessageUserServices.getMessageById(requesterId, messageId));
@@ -94,6 +99,7 @@ public class MessageUserController {
         // requester id
         // message id
     @GetMapping("/{messageId}/resource")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMessageFile(@RequestHeader String requesterId, @PathVariable String messageId) {
         try {
             ResourceData data = getMessageUserServices.getMessageFile(requesterId, messageId);
@@ -117,6 +123,7 @@ public class MessageUserController {
             // chat id
             // content
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postNewTextMessage(@RequestHeader String requesterId, @RequestBody TextMessageUserRequest textMessageRequest) {
         try {
             return ResponseEntity.ok().body(controlMessageUserServices.addNewTextMessage(requesterId, textMessageRequest));
@@ -132,6 +139,7 @@ public class MessageUserController {
         // type
         // file
     @PostMapping(value = "/resource/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postNewFileMessage(@RequestHeader String requesterId,  @RequestHeader String chatId, @RequestHeader String type, @RequestPart("file") MultipartFile file) {
         try {
             FileMessageUserRequest fileMessageRequest = new FileMessageAdminRequest();
@@ -146,6 +154,7 @@ public class MessageUserController {
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> handleMaxSize(MaxUploadSizeExceededException e) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File size exceeds 10MB limit");
     }
@@ -155,6 +164,7 @@ public class MessageUserController {
         // message id
         // content
     @PutMapping("/{messageId}/edit")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> putTextMessage(@RequestHeader String requesterId, @PathVariable String messageId, @RequestBody MessageUpdateContentRequest content) {
         try {
             return ResponseEntity.ok(controlMessageUserServices.editTextMessage(requesterId, messageId, content.content));
@@ -168,6 +178,7 @@ public class MessageUserController {
         // requester id
         // message id
     @DeleteMapping("/{messageId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> softDeleteMessage(@RequestHeader String requesterId, @PathVariable String messageId) {
         try {
             controlMessageUserServices.softDeleteMessage(requesterId, messageId);

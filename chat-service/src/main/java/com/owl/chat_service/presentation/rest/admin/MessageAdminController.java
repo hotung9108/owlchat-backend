@@ -12,6 +12,9 @@ import com.owl.chat_service.presentation.dto.MessageUpdateContentRequest;
 import com.owl.chat_service.presentation.dto.admin.FileMessageAdminRequest;
 import com.owl.chat_service.presentation.dto.admin.TextMessageAdminRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -57,6 +60,7 @@ public class MessageAdminController {
         // createdDateStart
         // createdDateEnd
     @GetMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMessages(
         @RequestParam(required = false, defaultValue = "") String keywords,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -97,6 +101,7 @@ public class MessageAdminController {
         // createdDateStart
         // createdDateEnd
     @GetMapping("/chat/{chatId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMessagesByChatId(
         @PathVariable String chatId,
         @RequestParam(required = false, defaultValue = "") String keywords,
@@ -138,6 +143,7 @@ public class MessageAdminController {
         // createdDateStart
         // createdDateEnd
     @GetMapping("/sender/{senderId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMessagesBySenderId(
         @PathVariable String senderId,
         @RequestParam(required = false, defaultValue = "") String keywords,
@@ -166,6 +172,7 @@ public class MessageAdminController {
     // get message by id
         // messageId
     @GetMapping("/{messageId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMessageById(@PathVariable String messageId) {
         try {
             return ResponseEntity.ok().body(getMessageAdminServices.getMessageById(messageId));
@@ -178,6 +185,7 @@ public class MessageAdminController {
     // get message resource by id
         // messageId
     @GetMapping("/{messageId}/resource")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getMessageFile(@PathVariable String messageId) {
         try {
             ResourceData data = getMessageAdminServices.getMessageFile(messageId);
@@ -201,6 +209,7 @@ public class MessageAdminController {
             // content
             // senderId
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postNewTextMessage(@RequestBody TextMessageAdminRequest textMessageRequest) {
         try {
             return ResponseEntity.ok().body(controlMessageAdminServices.addNewTextMessage(textMessageRequest));
@@ -215,6 +224,7 @@ public class MessageAdminController {
         // type
         // file
     @PostMapping(value = "/resource/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postNewFileMessage(@RequestHeader String senderId, @RequestHeader String chatId, @RequestHeader String type, @RequestPart("file") MultipartFile file) {
         try {
             FileMessageAdminRequest fileMessageRequest = new FileMessageAdminRequest();
@@ -238,6 +248,7 @@ public class MessageAdminController {
         // message id
         // content
     @PutMapping("/{messageId}/edit")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> putTextMessage(@PathVariable String messageId, @RequestBody MessageUpdateContentRequest content) {
         try {
             return ResponseEntity.ok(controlMessageAdminServices.editTextMessage(messageId, content.content));
@@ -248,6 +259,7 @@ public class MessageAdminController {
     }
 
     @PatchMapping("/{messageId}/activate")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> activateTextMessage(@PathVariable String messageId) {
         try {
             return ResponseEntity.ok(controlMessageAdminServices.activateMessage(messageId));
@@ -260,6 +272,7 @@ public class MessageAdminController {
     // soft delete message
         // message id
     @DeleteMapping("/{messageId}/remove")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> softDeleteMessage(@PathVariable String messageId) {
         try {
             controlMessageAdminServices.softDeleteMessage(messageId);
@@ -273,6 +286,7 @@ public class MessageAdminController {
     // hard delete message
         // message id
     @DeleteMapping("/{messageId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> hardDeleteMessage(@PathVariable String messageId) {
         try {
             controlMessageAdminServices.hardDeleteMessage(messageId);

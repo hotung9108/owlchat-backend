@@ -9,6 +9,9 @@ import com.owl.social_service.application.admin.ControlBlockAdminServices;
 import com.owl.social_service.application.admin.GetBlockAdminServices;
 import com.owl.social_service.presentation.dto.BlockCreateRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +34,7 @@ public class BlockAdminController {
     }
 
     @GetMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getBlocks(
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
@@ -48,6 +52,7 @@ public class BlockAdminController {
     }
     
     @GetMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?>  getBlockById(
         @PathVariable String id
     ) 
@@ -61,6 +66,7 @@ public class BlockAdminController {
     }
 
     @GetMapping("/user/{userId}/blocked")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getUserBlocked(
         @PathVariable String userId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -79,6 +85,7 @@ public class BlockAdminController {
     }
 
     @GetMapping("/user/{userId}/blocker")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getUserBlocker(
         @PathVariable String userId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -97,6 +104,7 @@ public class BlockAdminController {
     }
 
     @GetMapping("/blocker/{blockerId}/blocked/{blockedId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getUserBlockUser(
         @PathVariable String blockerId,
         @PathVariable String blockedId
@@ -111,6 +119,7 @@ public class BlockAdminController {
     }
 
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postBlock(@RequestBody BlockCreateRequest request) {
         try {
             return ResponseEntity.ok().body(controlBlockAdminServices.addNewBlock(request));
@@ -121,6 +130,7 @@ public class BlockAdminController {
     }
     
     @DeleteMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteBlock(
         @PathVariable String id
     ) 

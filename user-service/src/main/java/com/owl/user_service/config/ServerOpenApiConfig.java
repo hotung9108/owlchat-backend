@@ -1,4 +1,4 @@
-package com.owl.chat_service.config;
+package com.owl.user_service.config;
 
 import java.util.List;
 
@@ -11,14 +11,14 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
-public class OpenApiConfig {
+// @Profile("service")
+public class ServerOpenApiConfig {
 
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                new Server().url("http://localhost:8082")
-            ))
+                        new Server().url("http://localhost:8081")))
 
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",

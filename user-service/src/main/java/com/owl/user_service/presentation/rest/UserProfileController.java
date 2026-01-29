@@ -11,6 +11,7 @@ import com.owl.user_service.application.service.user_profile.GetUserProfileServi
 import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.time.LocalDate;
@@ -39,8 +40,7 @@ public class UserProfileController {
         this.getUserProfileService = getUserProfileService;
         this.controlUserProfileServices = controlUserProfileServices;
     }
-
-    @SecurityRequirement(name = "bearerAuth")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("")
     public ResponseEntity<?> getProfiles(
         @RequestParam(required = false, defaultValue = "") String keywords, 
@@ -60,7 +60,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @SecurityRequirement(name = "bearerAuth")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}")
     public ResponseEntity<?> getProfileById(@PathVariable String id) {
         try 
@@ -71,7 +71,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @SecurityRequirement(name = "bearerAuth")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("")
     public ResponseEntity<?> addNewProfile(@RequestBody UserProfileCreateRequest userProfileCreateRequest) {
         try 
@@ -82,7 +82,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/account/{id}")
     public ResponseEntity<?> addNewProfileToAccount(@PathVariable String id, @RequestBody UserProfileRequest userProfileRequest) {
         try 
@@ -93,7 +93,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable String id, @RequestBody UserProfileRequest userProfileRequest) {
         try {
@@ -113,7 +113,7 @@ public class UserProfileController {
     //         return ResponseEntity.badRequest().body(e.getMessage());
     //     }
     // }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProfile(@PathVariable String id) {
         try {
@@ -123,7 +123,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping(value = "/{id}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadUserAvatar(@PathVariable String id, @RequestPart("file") MultipartFile avatarFile) {
         try {
@@ -139,7 +139,7 @@ public class UserProfileController {
     public ResponseEntity<?> handleMaxSize(MaxUploadSizeExceededException e) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File size exceeds 10MB limit");
     }
-    
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}/avatar")
     public ResponseEntity<?> getUserAvatar(@PathVariable String id) {
         try {
