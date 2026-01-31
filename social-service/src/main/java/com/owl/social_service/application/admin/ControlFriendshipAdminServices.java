@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.owl.social_service.application.notification.NotificationService;
+import com.owl.social_service.application.notification.dto.NotificationDto.NotificationAction;
 import com.owl.social_service.domain.validate.FriendshipValidate;
 import com.owl.social_service.external_service.client.UserServiceApiClient;
 import com.owl.social_service.persistence.mongodb.document.Friendship;
@@ -19,12 +21,14 @@ public class ControlFriendshipAdminServices {
     private final GetFriendshipAdminServices getFriendshipAdminServices;
     private final GetBlockAdminServices getBlockAdminServices;
     private final UserServiceApiClient userServiceApiClient;
+    private final NotificationService notificationService;
 
-    public ControlFriendshipAdminServices(FriendshipRepository friendshipRepository, GetFriendshipAdminServices getFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices, UserServiceApiClient userServiceApiClient) {
+    public ControlFriendshipAdminServices(FriendshipRepository friendshipRepository, GetFriendshipAdminServices getFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices, UserServiceApiClient userServiceApiClient, NotificationService notificationService) {
         this.friendshipRepository = friendshipRepository;
         this.getFriendshipAdminServices = getFriendshipAdminServices;
         this.getBlockAdminServices = getBlockAdminServices;
-        this.userServiceApiClient = userServiceApiClient;}
+        this.userServiceApiClient = userServiceApiClient;
+        this.notificationService = notificationService;}
 
     public Friendship addNewFriendship(FriendshipCreateRequest request) {
         if (!FriendshipValidate.validateUserId(request.firstUserId))
@@ -53,6 +57,10 @@ public class ControlFriendshipAdminServices {
 
         friendshipRepository.save(newFriendship);
 
+        // notify
+        notificationService.sendFriendshipToUser(newFriendship.getFirstUserId(), NotificationAction.CREATED, newFriendship);
+        notificationService.sendFriendshipToUser(newFriendship.getSecondUserId(), NotificationAction.CREATED, newFriendship);
+
         return newFriendship;
     }
 
@@ -63,6 +71,12 @@ public class ControlFriendshipAdminServices {
         if (getFriendshipAdminServices.getFriendshipById(id) == null) 
             throw new IllegalArgumentException("Friendship does not exists");
 
+        Friendship existingFriendship = new Friendship();
+
         friendshipRepository.deleteById(id);
+
+        // notify
+        notificationService.sendFriendshipToUser(existingFriendship.getFirstUserId(), NotificationAction.DELETED, existingFriendship);
+        notificationService.sendFriendshipToUser(existingFriendship.getSecondUserId(), NotificationAction.DELETED, existingFriendship);
     }
 }
