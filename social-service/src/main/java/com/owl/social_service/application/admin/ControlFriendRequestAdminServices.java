@@ -45,10 +45,10 @@ public class ControlFriendRequestAdminServices {
         if (request.senderId.trim().compareToIgnoreCase(request.receiverId.trim()) == 0) 
             throw new IllegalArgumentException("Invalid request");
 
-        if (userServiceApiClient.getUserById(request.senderId) != null) 
+        if (userServiceApiClient.getUserById(request.senderId) == null) 
             throw new IllegalArgumentException("Sender does not exists");
 
-        if (userServiceApiClient.getUserById(request.receiverId) != null) 
+        if (userServiceApiClient.getUserById(request.receiverId) == null) 
             throw new IllegalArgumentException("Receiver does not exists");
 
         if (existingFriendRequest.size() > 0) 

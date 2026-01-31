@@ -2,10 +2,14 @@ package com.owl.social_service.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
+import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 
+import com.owl.social_service.infrastructure.decorater.EmaWebSocketHandlerDecorator;
 import com.owl.social_service.infrastructure.handler.WebSocketHandshakeHandler;
 import com.owl.social_service.infrastructure.interceptor.WebSocketHandshakeInterceptor;
 
@@ -26,11 +30,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             .addEndpoint("/social")
             .addInterceptors(webSocketHandshakeInterceptor)
             .setHandshakeHandler(webSocketHandshakeHandler)
-            .setAllowedOriginPatterns("*"); 
+            .setAllowedOriginPatterns("*");
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/topic", "/queue");
+        registry.setUserDestinationPrefix("/user");
+    }
+
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration.addDecoratorFactory(new WebSocketHandlerDecoratorFactory() {
+            @Override
+            public WebSocketHandler decorate(WebSocketHandler webSocketHandler) {
+                return new EmaWebSocketHandlerDecorator(webSocketHandler);
+            }
+        });
     }
 }

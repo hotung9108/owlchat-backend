@@ -12,9 +12,14 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 public class WebSocketHandshakeHandler extends DefaultHandshakeHandler {
     @Override
     protected Principal determineUser(ServerHttpRequest request, WebSocketHandler wsHandler, Map<String, Object> attributes) {
-
         String userId = (String) attributes.get("userId");
-
-        return () -> userId;
+        
+        // Ensure we always have a userId
+        if (userId == null || userId.isEmpty()) {
+            userId = "anonymous-" + System.currentTimeMillis();
+        }
+        
+        String finalUserId = userId;
+        return () -> finalUserId;
     }
 }

@@ -15,18 +15,19 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         String requesterId = request.getHeaders().getFirst("requesterId");
 
+        // Allow connection even without requesterId, but store it if provided
         if (requesterId != null) {
             attributes.put("userId", requesterId);
-            return true;
+        } else {
+            // Set a default user ID for testing/anonymous connections
+            attributes.put("userId", "anonymous-" + System.currentTimeMillis());
         }
         
-        return false;
+        return true;
     }
 
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'afterHandshake'");
     }
     
 }
