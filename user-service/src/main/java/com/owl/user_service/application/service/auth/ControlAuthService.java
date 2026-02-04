@@ -24,14 +24,12 @@ public class ControlAuthService {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
-    // private final AccountServices accountServices;
     private final AccountJpaRepository accountJpaRepository;
 
     public ControlAuthService(AuthService authService, RefreshTokenService refreshTokenService,
             AccountJpaRepository accountJpaRepository) {
         this.authService = authService;
         this.refreshTokenService = refreshTokenService;
-        // this.accountServices = accountServices;
         this.accountJpaRepository = accountJpaRepository;
 
     }
@@ -50,50 +48,19 @@ public class ControlAuthService {
         if (account.getId() == null) {
             throw new IllegalArgumentException("Account ID is null");
         }
+        if (account.getStatus() == false) {
+            throw new IllegalArgumentException("Your account have been ban");
+        }
         String accessToken = authService.generateAccessToken(
                 account.getUsername(),
                 account.getRole().toString(),
                 account.getId());
         String refreshToken = authService.generateRefreshToken(account.getId());
         refreshTokenService.createRefreshToken(account.getUsername(), account.getId(), refreshToken);
-        // String refreshToken = "";
-        // String refreshToken =
-        // authService.generateRefreshToken(authRequest.getUsername());
-        return new AuthResponse(accessToken, refreshToken);
+
+        return new AuthResponse(accessToken, refreshToken, account.getRole().toString(), account.getStatus());
     }
 
-    // public AuthResponse login(AuthRequest authRequest) {
-    // Account account =
-    // accountJpaRepository.findByUsername(authRequest.getUsername());
-    // if (account == null) {
-    // throw new IllegalArgumentException("Account not found");
-    // }
-    // if (!authService.verifyPassword(authRequest.getPassword(),
-    // account.getPassword()))
-    // ;
-
-    // String accessToken =
-    // authService.generateAccessToken(authRequest.getUsername(),
-    // Map.of("role", account.getRole().toString()));
-    // String refreshToken =
-    // authService.generateRefreshToken(authRequest.getUsername());
-
-    // // String refreshToken =
-    // // authService.generateRefreshToken(authRequest.getUsername());
-    // refreshTokenService.createRefreshToken(authRequest.getUsername(),
-    // account.getId().toString(), refreshToken);
-    // return new AuthResponse(accessToken, refreshToken);
-    // }
-
-    // public Optional<AuthResponse> refreshAccessToken(String refreshToken) {
-    // return refreshTokenService.findByToken(refreshToken)
-    // .filter(token -> !refreshTokenService.isTokenExpired(token))
-    // .map(token -> {
-    // String accessToken = authService.generateAccessToken(token.getUsername(),
-    // Map.of("role", "USER"));
-    // return new AuthResponse(accessToken, refreshToken);
-    // });
-    // }
     public Optional<AuthResponse> refreshAccessToken(String refreshToken) {
         return refreshTokenService.findByToken(refreshToken)
                 .filter(token -> !refreshTokenService.isTokenExpired(token))
