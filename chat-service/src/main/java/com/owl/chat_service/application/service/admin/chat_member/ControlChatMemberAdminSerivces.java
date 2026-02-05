@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
+import com.owl.chat_service.application.service.notification.NotificationService;
 import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.validate.ChatMemberValidate;
 import com.owl.chat_service.external_service.client.BlockUserServiceApiClient;
@@ -19,6 +20,9 @@ import com.owl.chat_service.persistence.mongodb.document.Chat.ChatType;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember.ChatMemberRole;
 import com.owl.chat_service.persistence.mongodb.repository.ChatMemberRepository;
 import com.owl.chat_service.presentation.dto.admin.ChatMemberAdminRequest;
+import com.owl.chat_service.presentation.dto.notification.NotificationDto;
+import com.owl.chat_service.presentation.dto.notification.NotificationDto.NotificationAction;
+import com.owl.chat_service.presentation.dto.notification.NotificationDto.NotificationType;
 
 @Service
 @Transactional
@@ -29,40 +33,44 @@ public class ControlChatMemberAdminSerivces {
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final GetChatAdminServices getChatAdminServices;
     private final UserServiceApiClient userServiceApiClient;
+    private final NotificationService notificationService;
 
-    public ControlChatMemberAdminSerivces(ChatMemberRepository chatMemberRepository, GetChatMemberAdminServices getChatMemberAdminServices, GetChatAdminServices getChatAdminServices, UserServiceApiClient userServiceApiClient, BlockUserServiceApiClient blockUserServiceApiClient) {
+    public ControlChatMemberAdminSerivces(ChatMemberRepository chatMemberRepository,
+            GetChatMemberAdminServices getChatMemberAdminServices,
+            GetChatAdminServices getChatAdminServices,
+            UserServiceApiClient userServiceApiClient,
+            BlockUserServiceApiClient blockUserServiceApiClient,
+            NotificationService notificationService) {
         this.chatMemberRepository = chatMemberRepository;
         this.getChatMemberAdminServices = getChatMemberAdminServices;
         this.getChatAdminServices = getChatAdminServices;
         this.userServiceApiClient = userServiceApiClient;
-        this.blockUserServiceApiClient = blockUserServiceApiClient;}
+        this.blockUserServiceApiClient = blockUserServiceApiClient;
+        this.notificationService = notificationService;
+    }
 
     public ChatMember addNewChatMember(ChatMemberAdminRequest chatMemberRequest) {
         ChatMember newChatMember = new ChatMember();
 
-        if (!ChatMemberValidate.validateMemberId(chatMemberRequest.memberId)) 
+        if (!ChatMemberValidate.validateMemberId(chatMemberRequest.memberId))
             throw new IllegalArgumentException("Invalid member id");
 
-        try {
-            if (userServiceApiClient.getUserById(chatMemberRequest.memberId) == null) 
-                throw new IllegalArgumentException("Member not found");
-        }
-        catch (Exception e) {
-            throw new IllegalArgumentException(e.getMessage());
-        }
+        if (userServiceApiClient.getUserById(chatMemberRequest.memberId) == null) 
+            throw new IllegalArgumentException("Member not found");
 
-        if (!ChatMemberValidate.validateChatId(chatMemberRequest.chatId)) 
+        if (!ChatMemberValidate.validateChatId(chatMemberRequest.chatId))
             throw new IllegalArgumentException("Invalid chat id");
 
         Chat chat = getChatAdminServices.getChatById(chatMemberRequest.chatId);
-        if (chat == null) 
+        if (chat == null)
             throw new IllegalArgumentException("Chat does not exists");
 
         if (!chat.getStatus())
             throw new IllegalArgumentException("Chat have been removed");
 
         if (chatMemberRequest.inviterId != null && !chatMemberRequest.inviterId.isBlank()) {
-            if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId, chatMemberRequest.inviterId) == null)
+            if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId,
+                    chatMemberRequest.inviterId) == null)
                 throw new SecurityException("Inviter does not have permission to access this chat");
         }
 
@@ -72,31 +80,31 @@ public class ControlChatMemberAdminSerivces {
             if (numberOfMember + 1 > 2) {
                 throw new IllegalArgumentException("The chat has reached its member limit");
             }
-        }
-        else if (chat.getType() == ChatType.GROUP) {
+        } else if (chat.getType() == ChatType.GROUP) {
             if (numberOfMember + 1 > 100) {
                 throw new IllegalArgumentException("The chat has reached its member limit");
             }
         }
 
-        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId, chatMemberRequest.memberId) != null) 
+        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId,
+                chatMemberRequest.memberId) != null)
             throw new IllegalArgumentException("Chat member already exists");
 
         chatMemberRequest.role = chatMemberRequest.role.trim().toUpperCase();
         if (!ChatMemberValidate.validateRole(chatMemberRequest.role))
             throw new IllegalArgumentException("Invalid role");
-        else 
+        else
             newChatMember.setRole(ChatMemberRole.valueOf(chatMemberRequest.role));
 
         // if (!ChatMemberValidate.validateNickname(chatMemberRequest.nickname))
-        //     throw new IllegalArgumentException("Invalid nickname");
+        // throw new IllegalArgumentException("Invalid nickname");
 
         try {
-            if (blockUserServiceApiClient.getUserBlockUser(chatMemberRequest.memberId, chatMemberRequest.inviterId) != null) {
+            if (blockUserServiceApiClient.getUserBlockUser(chatMemberRequest.memberId,
+                    chatMemberRequest.inviterId) != null) {
                 throw new IllegalArgumentException("Inviter have been blocked by user");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage());
         }
 
@@ -107,41 +115,52 @@ public class ControlChatMemberAdminSerivces {
         newChatMember.setInviterId(chatMemberRequest.inviterId);
         newChatMember.setJoinDate(Instant.now());
 
-        return chatMemberRepository.save(newChatMember);
+        // return chatMemberRepository.save(newChatMember);
+        ChatMember savedChatMember = chatMemberRepository.save(newChatMember);
+
+        // Send notification to the chat topic
+        NotificationDto<ChatMember> notification = new NotificationDto<>(
+                NotificationType.CHAT_MEMBER,
+                NotificationAction.CREATED,
+                savedChatMember);
+        notificationService.sendToChat(chat.getId(), notification);
+
+        return savedChatMember;
     }
 
     public ChatMember updateChatMember(String chatId, String memberId, ChatMemberAdminRequest chatMemberRequest) {
-        if (!ChatMemberValidate.validateMemberId(memberId)) 
+        if (!ChatMemberValidate.validateMemberId(memberId))
             throw new IllegalArgumentException("Invalid member id");
 
-        if (!ChatMemberValidate.validateChatId(chatId)) 
+        if (!ChatMemberValidate.validateChatId(chatId))
             throw new IllegalArgumentException("Invalid chat id");
 
         ChatMember existingChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
-        if (existingChatMember == null) 
+        if (existingChatMember == null)
             throw new IllegalArgumentException("Chat member does not exists");
 
-        if (!ChatMemberValidate.validateMemberId(chatMemberRequest.memberId)) 
+        if (!ChatMemberValidate.validateMemberId(chatMemberRequest.memberId))
             throw new IllegalArgumentException("Invalid update member id");
 
-        if (!ChatMemberValidate.validateChatId(chatMemberRequest.chatId)) 
+        if (!ChatMemberValidate.validateChatId(chatMemberRequest.chatId))
             throw new IllegalArgumentException("Invalid update chat id");
 
         Chat chat = getChatAdminServices.getChatById(chatMemberRequest.chatId);
-        if (chat == null) 
+        if (chat == null)
             throw new IllegalArgumentException("Chat does not exists");
 
         if (!chat.getStatus())
             throw new IllegalArgumentException("Chat have been removed");
 
-        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId, chatMemberRequest.memberId) != null) 
+        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatMemberRequest.chatId,
+                chatMemberRequest.memberId) != null)
             throw new IllegalArgumentException("Chat member already exists");
 
         chatMemberRequest.role = chatMemberRequest.role.trim().toUpperCase();
         if (!ChatMemberValidate.validateRole(chatMemberRequest.role))
             throw new IllegalArgumentException("Invalid role");
-        else 
+        else
             existingChatMember.setRole(ChatMemberRole.valueOf(chatMemberRequest.role));
 
         existingChatMember.setMemberId(chatMemberRequest.memberId);
@@ -150,18 +169,28 @@ public class ControlChatMemberAdminSerivces {
         existingChatMember.setInviterId(chatMemberRequest.inviterId);
         existingChatMember.setJoinDate(Instant.now());
 
-        return chatMemberRepository.save(existingChatMember);
+        // return chatMemberRepository.save(existingChatMember);
+        ChatMember updatedChatMember = chatMemberRepository.save(existingChatMember);
+
+        // Send notification to the chat topic
+        NotificationDto<ChatMember> notification = new NotificationDto<>(
+                NotificationType.CHAT_MEMBER,
+                NotificationAction.UPDATED,
+                updatedChatMember);
+        notificationService.sendToChat(chatId, notification);
+
+        return updatedChatMember;
     }
 
     public ChatMember updateChatMemberRole(String chatId, String memberId, String role) {
-        if (!ChatMemberValidate.validateMemberId(memberId)) 
+        if (!ChatMemberValidate.validateMemberId(memberId))
             throw new IllegalArgumentException("Invalid member id");
 
-        if (!ChatMemberValidate.validateChatId(chatId)) 
+        if (!ChatMemberValidate.validateChatId(chatId))
             throw new IllegalArgumentException("Invalid chat id");
 
         Chat chat = getChatAdminServices.getChatById(chatId);
-        if (chat == null) 
+        if (chat == null)
             throw new IllegalArgumentException("Chat does not exists");
 
         if (!chat.getStatus())
@@ -169,47 +198,67 @@ public class ControlChatMemberAdminSerivces {
 
         ChatMember existingChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
-        if (existingChatMember == null) 
+        if (existingChatMember == null)
             throw new IllegalArgumentException("Chat member does not exists");
 
         role = role.trim().toUpperCase();
         if (!ChatMemberValidate.validateRole(role))
             throw new IllegalArgumentException("Invalid role");
-        else 
+        else
             existingChatMember.setRole(ChatMemberRole.valueOf(role));
 
-        return chatMemberRepository.save(existingChatMember);
+        // return chatMemberRepository.save(existingChatMember);
+        ChatMember updatedChatMember = chatMemberRepository.save(existingChatMember);
+
+        // Send notification to the chat topic
+        NotificationDto<ChatMember> notification = new NotificationDto<>(
+                NotificationType.CHAT_MEMBER,
+                NotificationAction.UPDATED,
+                updatedChatMember);
+        notificationService.sendToChat(chatId, notification);
+
+        return updatedChatMember;
     }
 
     public ChatMember updateChatMemberNickname(String chatId, String memberId, String nickname) {
-        if (!ChatMemberValidate.validateMemberId(memberId)) 
+        if (!ChatMemberValidate.validateMemberId(memberId))
             throw new IllegalArgumentException("Invalid member id");
 
-        if (!ChatMemberValidate.validateChatId(chatId)) 
+        if (!ChatMemberValidate.validateChatId(chatId))
             throw new IllegalArgumentException("Invalid chat id");
 
         ChatMember existingChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
-        if (existingChatMember == null) 
+        if (existingChatMember == null)
             throw new IllegalArgumentException("Chat member does not exists");
 
         // if (!ChatMemberValidate.validateNickname(nickname))
-        //     throw new IllegalArgumentException("Invalid nickname");
+        // throw new IllegalArgumentException("Invalid nickname");
 
         existingChatMember.setNickname(nickname.trim());
 
-        return chatMemberRepository.save(existingChatMember);
+        // return chatMemberRepository.save(existingChatMember);
+        ChatMember updatedChatMember = chatMemberRepository.save(existingChatMember);
+
+        // Send notification to the chat topic
+        NotificationDto<ChatMember> notification = new NotificationDto<>(
+                NotificationType.CHAT_MEMBER,
+                NotificationAction.UPDATED,
+                updatedChatMember);
+        notificationService.sendToChat(chatId, notification);
+
+        return updatedChatMember;
     }
 
     public void deleteChatMember(String chatId, String memberId) {
-        if (!ChatMemberValidate.validateMemberId(memberId)) 
+        if (!ChatMemberValidate.validateMemberId(memberId))
             throw new IllegalArgumentException("Invalid member id");
 
-        if (!ChatMemberValidate.validateChatId(chatId)) 
+        if (!ChatMemberValidate.validateChatId(chatId))
             throw new IllegalArgumentException("Invalid chat id");
 
         Chat chat = getChatAdminServices.getChatById(chatId);
-        if (chat == null) 
+        if (chat == null)
             throw new IllegalArgumentException("Chat does not exists");
 
         if (!chat.getStatus())
@@ -217,13 +266,19 @@ public class ControlChatMemberAdminSerivces {
 
         ChatMember existingChatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
-        if (existingChatMember == null) 
+        if (existingChatMember == null)
             throw new IllegalArgumentException("Chat member does not exists");
 
         if (ChatMemberServices.compareRole(existingChatMember.getRole(), ChatMemberRole.OWNER) == 0)
             throw new IllegalArgumentException("Chat owner cannot leave chat");
 
-        chatMemberRepository.deleteById(Objects.requireNonNull(existingChatMember.getId(), "Delete chat member id is null"));
+        chatMemberRepository
+                .deleteById(Objects.requireNonNull(existingChatMember.getId(), "Delete chat member id is null"));
+        NotificationDto<ChatMember> notification = new NotificationDto<>(
+                NotificationType.CHAT_MEMBER,
+                NotificationAction.DELETED,
+                existingChatMember);
+        notificationService.sendToChat(chatId, notification);
     }
 
     public void deleteChatMemberByChatId(String chatId) {
@@ -231,6 +286,11 @@ public class ControlChatMemberAdminSerivces {
 
         for (ChatMember chatMember : chatMembers) {
             deleteChatMember(chatId, chatMember.getMemberId());
+            NotificationDto<ChatMember> notification = new NotificationDto<>(
+                    NotificationType.CHAT_MEMBER,
+                    NotificationAction.DELETED,
+                    chatMember);
+            notificationService.sendToChat(chatId, notification);
         }
     }
 }

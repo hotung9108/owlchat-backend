@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.owl.social_service.application.notification.NotificationService;
+import com.owl.social_service.application.notification.dto.NotificationDto.NotificationAction;
 import com.owl.social_service.domain.validate.FriendshipValidate;
 import com.owl.social_service.external_service.client.UserServiceApiClient;
 import com.owl.social_service.persistence.mongodb.document.Block;
@@ -25,8 +27,9 @@ public class ControlBlockAdminServices {
     private final GetFriendshipAdminServices getFriendshipAdminServices;
     private final ControlFriendshipAdminServices controlFriendshipAdminServices;
     private final UserServiceApiClient userServiceApiClient;
+    private final NotificationService notificationService;
 
-    public ControlBlockAdminServices(BlockRepository blockRepository, GetBlockAdminServices getBlockAdminServices, GetFriendRequestAdminServices getFriendRequestAdminServices, ControlFriendRequestAdminServices controlFriendRequestAdminServices, ControlFriendshipAdminServices controlFriendshipAdminServices, GetFriendshipAdminServices getFriendshipAdminServices, UserServiceApiClient userServiceApiClient) {
+    public ControlBlockAdminServices(BlockRepository blockRepository, GetBlockAdminServices getBlockAdminServices, GetFriendRequestAdminServices getFriendRequestAdminServices, ControlFriendRequestAdminServices controlFriendRequestAdminServices, ControlFriendshipAdminServices controlFriendshipAdminServices, GetFriendshipAdminServices getFriendshipAdminServices, UserServiceApiClient userServiceApiClient, NotificationService notificationService) {
         this.blockRepository = blockRepository;
         this.getBlockAdminServices = getBlockAdminServices;
         this.getFriendRequestAdminServices = getFriendRequestAdminServices;
@@ -34,6 +37,7 @@ public class ControlBlockAdminServices {
         this.getFriendshipAdminServices = getFriendshipAdminServices;
         this.controlFriendshipAdminServices = controlFriendshipAdminServices;
         this.userServiceApiClient = userServiceApiClient;
+        this.notificationService = notificationService;
     }
 
     public Block addNewBlock(BlockCreateRequest request) {
@@ -73,6 +77,10 @@ public class ControlBlockAdminServices {
 
         blockRepository.save(newBlock);
 
+        // notify
+        notificationService.sendBlockToUser(newBlock.getBlockerId(), NotificationAction.CREATED, newBlock);
+        notificationService.sendBlockToUser(newBlock.getBlockedId(), NotificationAction.CREATED, newBlock);
+
         return newBlock;
     }
 
@@ -85,6 +93,13 @@ public class ControlBlockAdminServices {
         if (existingBlock == null)
             throw new IllegalArgumentException("Block not found");
 
+        String firstUserId = new String(existingBlock.getBlockerId());
+        String secondUserId = new String(existingBlock.getBlockedId());
+
         blockRepository.deleteById(id);
+
+        // notify
+        notificationService.sendBlockToUser(firstUserId, NotificationAction.DELETED, existingBlock);
+        notificationService.sendBlockToUser(secondUserId, NotificationAction.DELETED, existingBlock);
     }
 }
