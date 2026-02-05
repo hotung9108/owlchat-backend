@@ -3,6 +3,8 @@ package com.owl.chat_service.application.service.user.chat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,10 +59,10 @@ public class ControlChatUserServices {
         else if (chatRequest.chatMembersId.size() == 2) {
             request.type = "PRIVATE";       
 
-            List<Chat> member1Chats = (getChatUserServices.getChatsByMemberId(chatRequest.chatMembersId.get(0), null, -1, 0, true, "PRIVATE", null, null));
-            List<Chat> member2Chats = getChatUserServices.getChatsByMemberId(chatRequest.chatMembersId.get(1), null, -1, 0, true, "PRIVATE", null, null);
+            List<String> member1Chats = getChatUserServices.getChatsByMemberId(chatRequest.chatMembersId.get(0), null, -1, 0, true, "PRIVATE", null, null).stream().map(Chat::getId).collect(Collectors.toList());
+            List<String> member2Chats = getChatUserServices.getChatsByMemberId(chatRequest.chatMembersId.get(1), null, -1, 0, true, "PRIVATE", null, null).stream().map(Chat::getId).collect(Collectors.toList());
             
-            for (Chat chat : member2Chats) {
+            for (String chat : member2Chats) {
                 if (member1Chats.contains(chat)) {
                     throw new IllegalArgumentException("Private chat already exists");
                 }
