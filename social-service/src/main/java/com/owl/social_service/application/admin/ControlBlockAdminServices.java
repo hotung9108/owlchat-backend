@@ -93,10 +93,13 @@ public class ControlBlockAdminServices {
         if (existingBlock == null)
             throw new IllegalArgumentException("Block not found");
 
+        String firstUserId = new String(existingBlock.getBlockerId());
+        String secondUserId = new String(existingBlock.getBlockedId());
+
         blockRepository.deleteById(id);
 
         // notify
-        notificationService.sendBlockToUser(existingBlock.getBlockerId(), NotificationAction.DELETED, existingBlock);
-        notificationService.sendBlockToUser(existingBlock.getBlockedId(), NotificationAction.DELETED, existingBlock);
+        notificationService.sendBlockToUser(firstUserId, NotificationAction.DELETED, existingBlock);
+        notificationService.sendBlockToUser(secondUserId, NotificationAction.DELETED, existingBlock);
     }
 }

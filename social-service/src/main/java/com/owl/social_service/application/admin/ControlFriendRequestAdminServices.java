@@ -126,10 +126,13 @@ public class ControlFriendRequestAdminServices {
         if (friendRequest == null) 
             throw new IllegalArgumentException("Friend request not found");
 
+        String firstUserId = new String(friendRequest.getSenderId());
+        String secondUserId = new String(friendRequest.getReceiverId());
+
         friendRequestRepository.deleteById(id);
 
         // notify
-        notificationService.sendFriendRequestToUser(friendRequest.getSenderId(), NotificationAction.DELETED, friendRequest);
-        notificationService.sendFriendRequestToUser(friendRequest.getReceiverId(), NotificationAction.DELETED, friendRequest);
+        notificationService.sendFriendRequestToUser(firstUserId, NotificationAction.DELETED, friendRequest);
+        notificationService.sendFriendRequestToUser(secondUserId, NotificationAction.DELETED, friendRequest);
     }
 }
