@@ -52,11 +52,10 @@ public class ChatUserController {
         // type
         // joinDateStart
         // joinDateEnd
-    @GetMapping("/member/{memberId}")
+    @GetMapping("/member")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatsByMemberId(
         @RequestHeader String requesterId, 
-        @PathVariable String memberId,
         @RequestParam(required = false, defaultValue = "") String keywords,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,

@@ -8,9 +8,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
+import com.owl.chat_service.application.service.event.AddMessageEvent;
+import com.owl.chat_service.application.service.event.EventEmitter;
 import com.owl.chat_service.application.service.notification.NotificationService;
 import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.service.MessageServices;
@@ -37,10 +38,10 @@ public class ControlMessageAdminServices {
     private final MessageRepository messageRepository;
     private final GetChatAdminServices getChatAdminServices;
     private final GetMessageAdminServices getMessageAdminServices;
-    private final ControlChatAdminServices controlChatAdminService;
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final UserServiceApiClient userServiceApiClient;
     private final BlockUserServiceApiClient blockUserServiceApiClient;
+    private final EventEmitter emitter;
     private final NotificationService notificationService;
 
     public ControlMessageAdminServices(MessageRepository messageRepository,
@@ -50,14 +51,15 @@ public class ControlMessageAdminServices {
             GetChatMemberAdminServices getChatMemberAdminServices,
             UserServiceApiClient userServiceApiClient,
             BlockUserServiceApiClient blockUserServiceApiClient,
-            NotificationService notificationService) {
+            NotificationService notificationService, 
+            EventEmitter emitter) {
         this.messageRepository = messageRepository;
         this.getChatAdminServices = getChatAdminServices;
         this.getMessageAdminServices = getMessageAdminServices;
-        this.controlChatAdminService = controlChatAdminService;
         this.getChatMemberAdminServices = getChatMemberAdminServices;
         this.userServiceApiClient = userServiceApiClient;
         this.blockUserServiceApiClient = blockUserServiceApiClient;
+        this.emitter = emitter;
         this.notificationService = notificationService;
     }
 
@@ -123,6 +125,10 @@ public class ControlMessageAdminServices {
 
         messageRepository.save(newMessage);
 
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
+
+        emitter.emit(event);
         // controlChatAdminService.updateChatNewestMessage(newMessage);
 
         // return newMessage;
@@ -183,7 +189,10 @@ public class ControlMessageAdminServices {
 
         messageRepository.save(newMessage);
 
-        controlChatAdminService.updateChatNewestMessage(newMessage);
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
+
+        emitter.emit(event);
 
         // return newMessage;
         NotificationDto<Message> message = new NotificationDto<>(
@@ -269,6 +278,11 @@ public class ControlMessageAdminServices {
 
         messageRepository.save(existingMessage);
 
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(existingMessage);
+
+        emitter.emit(event);
+      
         controlChatAdminService.updateChatNewestMessage(existingMessage);
         NotificationDto<Message> message = new NotificationDto<>(
                 NotificationType.MESSAGE,
@@ -363,6 +377,11 @@ public class ControlMessageAdminServices {
 
         messageRepository.save(newMessage);
 
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
+
+        emitter.emit(event);
+
         controlChatAdminService.updateChatNewestMessage(newMessage);
         // Send notification to the chat topic
         NotificationDto<Message> notification = new NotificationDto<>(
@@ -372,5 +391,12 @@ public class ControlMessageAdminServices {
         notificationService.sendToChat(fileMessageRequest.chatId, notification);
         notificationService.sendMessageToChat(fileMessageRequest.chatId, notification);
         return newMessage;
+    }
+
+    public void deleteMessageByChatId(String chatId) {
+        if (chatId == null || chatId.isBlank())
+                throw new IllegalArgumentException("Chat ID cannot be null");
+        
+        messageRepository.deleteByChatId(chatId);
     }
 }
