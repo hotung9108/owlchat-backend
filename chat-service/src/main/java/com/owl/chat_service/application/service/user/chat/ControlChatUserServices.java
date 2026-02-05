@@ -3,7 +3,6 @@ package com.owl.chat_service.application.service.user.chat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -85,7 +84,15 @@ public class ControlChatUserServices {
         chatMemberRequester.chatId = newChat.getId();
         chatMemberRequester.role = "OWNER";
         chatMemberRequester.inviterId = null;
-        controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequester);
+
+        try {
+            controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequester);
+        }
+        catch (Exception e) {
+            controlChatAdminServices.deleteChat(newChat.getId());
+
+            throw e;
+        }
 
         for (String memberId : chatRequest.chatMembersId) {
             ChatMemberAdminRequest chatMemberRequest = new ChatMemberAdminRequest();
@@ -100,7 +107,14 @@ public class ControlChatUserServices {
             else 
                 chatMemberRequest.role = "MEMBER";
 
-            controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequest);
+            try {
+                controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequest);
+            }
+            catch (Exception e) {
+                controlChatAdminServices.deleteChat(newChat.getId());
+
+                throw e;
+            }
         }
 
         return newChat;
