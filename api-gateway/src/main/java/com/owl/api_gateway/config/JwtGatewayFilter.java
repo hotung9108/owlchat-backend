@@ -41,7 +41,8 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
                 || path.contains("/auth")) {
             return chain.filter(exchange);
         }
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        // String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        String authHeader = extractAuthorization(exchange);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
@@ -64,6 +65,16 @@ public class JwtGatewayFilter implements GlobalFilter, Ordered {
 
         return chain.filter(
                 exchange.mutate().request(mutatedRequest).build());
+    }
+    private String extractAuthorization(ServerWebExchange exchange) {
+        return exchange.getRequest()
+                .getHeaders()
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().equalsIgnoreCase(HttpHeaders.AUTHORIZATION))
+                .map(e -> e.getValue().get(0))
+                .findFirst()
+                .orElse(null);
     }
 
 }
