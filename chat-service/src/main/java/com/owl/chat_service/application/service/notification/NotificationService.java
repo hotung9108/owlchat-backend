@@ -25,6 +25,12 @@ public class NotificationService {
             notification
         );
     }
+    public <T> void sendMessageToChat(String chatId, NotificationDto<T> message){
+        messagingTemplate.convertAndSend(
+            "/topic/chat." + chatId + "/messages",
+            message
+        );
+    }
     // public <T> void broadcast(NotificationDto<T> notification){
     //     messagingTemplate.convertAndSend(
     //         "/topic/broadcast",

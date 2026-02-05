@@ -60,6 +60,7 @@ public class ControlMessageUserServices {
                 NotificationAction.CREATED,
                 newMessage);
         notificationService.sendToChat(textMessageRequest.chatId, notification);
+        notificationService.sendMessageToChat(textMessageRequest.chatId, notification);
 
         return newMessage;
     }
@@ -82,8 +83,8 @@ public class ControlMessageUserServices {
                 NotificationAction.UPDATED,
                 updatedMessage);
         notificationService.sendToChat(updatedMessage.getChatId(), notification);
-
-        return updatedMessage;
+        notificationService.sendMessageToChat(updatedMessage.getChatId(), notification);
+        return updatedMessage;  
     }
 
     public void softDeleteMessage(String requesterId, String messageId) {
@@ -102,6 +103,8 @@ public class ControlMessageUserServices {
                 NotificationAction.DELETED,
                 existingMessage);
         notificationService.sendToChat(existingMessage.getChatId(), notification);
+        notificationService.sendMessageToChat(existingMessage.getChatId(), notification);
+
     }
 
     public Message addNewFileMessage(String requesterId, FileMessageUserRequest fileMessageRequest) {
