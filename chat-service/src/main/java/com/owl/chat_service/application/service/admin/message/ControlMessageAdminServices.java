@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
 import com.owl.chat_service.application.service.event.AddMessageEvent;
@@ -282,8 +283,7 @@ public class ControlMessageAdminServices {
         event.setMessage(existingMessage);
 
         emitter.emit(event);
-      
-        controlChatAdminService.updateChatNewestMessage(existingMessage);
+    
         NotificationDto<Message> message = new NotificationDto<>(
                 NotificationType.MESSAGE,
                 NotificationAction.DELETED,
@@ -382,7 +382,6 @@ public class ControlMessageAdminServices {
 
         emitter.emit(event);
 
-        controlChatAdminService.updateChatNewestMessage(newMessage);
         // Send notification to the chat topic
         NotificationDto<Message> notification = new NotificationDto<>(
                 NotificationType.MESSAGE,
@@ -398,5 +397,43 @@ public class ControlMessageAdminServices {
                 throw new IllegalArgumentException("Chat ID cannot be null");
         
         messageRepository.deleteByChatId(chatId);
+    }
+
+        public Message addNewSystemMessage(String chatId, String content) {
+        if (!MessageValidate.validateChatId(chatId)) {
+            throw new IllegalArgumentException("Invalid chat id");
+        }
+
+        Chat existingChat = getChatAdminServices.getChatById(chatId);
+        if (existingChat == null) {
+            throw new IllegalArgumentException("Chat does not exists");
+        }
+
+        if (!existingChat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
+
+        if (!MessageValidate.validateContent(content)) {
+            throw new IllegalArgumentException("Invalid content");
+        }
+
+        Message newMessage = new Message();
+        newMessage.setId(UUID.randomUUID().toString());
+        newMessage.setChatId(chatId);
+        newMessage.setStatus(true);
+        newMessage.setState(MessageState.ORIGIN);
+        newMessage.setType(MessageType.SYSTEM_MESSAGE);
+        newMessage.setContent(content);
+        newMessage.setSenderId("SYSTEM");
+        newMessage.setSentDate(Instant.now());
+        newMessage.setCreatedDate(newMessage.getSentDate());
+
+        messageRepository.save(newMessage);
+
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
+
+        emitter.emit(event);
+
+        return newMessage;
     }
 }
