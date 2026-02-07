@@ -13,6 +13,8 @@ import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServi
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
+import com.owl.chat_service.application.service.event.EventEmitter;
+import com.owl.chat_service.application.service.event.SystemMessageEvent;
 import com.owl.chat_service.application.service.notification.NotificationService;
 import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.validate.ChatValidate;
@@ -37,14 +39,15 @@ public class ControlChatUserServices {
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final GetChatUserServices getChatUserServices;
     private final NotificationService notificationService;
-
+    private final EventEmitter eventEmitter;
+    
     public ControlChatUserServices(ControlChatAdminServices controlChatAdminServices,
             ControlChatMemberAdminSerivces controlChatMemberAdminSerivces,
             GetChatAdminServices getChatAdminServices,
             ChatRepository chatRepository,
             GetChatMemberAdminServices getChatMemberAdminServices,
             GetChatUserServices getChatUserServices,
-            NotificationService notificationService) {
+            NotificationService notificationService, EventEmitter eventEmitter) {
         this.controlChatAdminServices = controlChatAdminServices;
         this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;
         this.getChatAdminServices = getChatAdminServices;
@@ -52,6 +55,7 @@ public class ControlChatUserServices {
         this.getChatMemberAdminServices = getChatMemberAdminServices;
         this.getChatUserServices = getChatUserServices;
         this.notificationService = notificationService;
+        this.eventEmitter = eventEmitter;
     }
 
     public Chat addNewChat(String requesterId, ChatUserRequest chatRequest) {
@@ -124,7 +128,6 @@ public class ControlChatUserServices {
 
                 throw e;
             }
-            controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequest);
         }
 
         // Gui notification khi them thanh vien vao chat
@@ -138,6 +141,11 @@ public class ControlChatUserServices {
                 NotificationAction.CREATED,
                 newChat);
         notificationService.sendToChat(newChat.getId(), notification);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(newChat.getId());
+        event.setContent("Chat has been created");
+        eventEmitter.emit(event);
 
         return newChat;
     }
@@ -177,6 +185,12 @@ public class ControlChatUserServices {
                 NotificationAction.UPDATED,
                 updatedChat);
         notificationService.sendToChat(chatId, notification);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chat.getId());
+        event.setContent("Chat name has been updated to " + chat.getName());
+        eventEmitter.emit(event);
+
         return updatedChat;
         // return chatRepository.save(chat);
     }
@@ -206,6 +220,11 @@ public class ControlChatUserServices {
                 NotificationAction.DELETED,
                 chatId);
         notificationService.sendToChat(chatId, notification);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chatId);
+        event.setContent("Chat name has been deleted");
+        eventEmitter.emit(event);
     }
 
     public void updateChatAvatarFile(String requesterId, String chatId, MultipartFile file) {
@@ -234,5 +253,9 @@ public class ControlChatUserServices {
                 chatId);
         notificationService.sendToChat(chatId, notification);
 
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chatId);
+        event.setContent("Chat avatar has been updated");
+        eventEmitter.emit(event);
     }
 }

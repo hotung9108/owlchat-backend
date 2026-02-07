@@ -5,9 +5,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
+import com.owl.chat_service.application.service.event.EventEmitter;
+import com.owl.chat_service.application.service.event.SystemMessageEvent;
 import com.owl.chat_service.application.service.notification.NotificationService;
 import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.validate.ChatMemberValidate;
+import com.owl.chat_service.external_service.client.UserServiceApiClient;
+import com.owl.chat_service.external_service.dto.UserProfileDto;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember;
 import com.owl.chat_service.persistence.mongodb.document.ChatMember.ChatMemberRole;
 import com.owl.chat_service.presentation.dto.admin.ChatMemberAdminRequest;
@@ -20,14 +24,18 @@ public class ControlChatMemberUserServices {
     private final ControlChatMemberAdminSerivces controlChatMemberAdminSerivces;
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final NotificationService notificationService;
+    private final EventEmitter eventEmitter;
+    private final UserServiceApiClient userServiceApiClient;
 
     public ControlChatMemberUserServices(
             ControlChatMemberAdminSerivces controlChatMemberAdminSerivces,
             GetChatMemberAdminServices getChatMemberAdminServices,
-            NotificationService notificationService) {
+            NotificationService notificationService, EventEmitter eventEmitter, UserServiceApiClient userServiceApiClient) {
         this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;
         this.getChatMemberAdminServices = getChatMemberAdminServices;
         this.notificationService = notificationService;
+        this.eventEmitter = eventEmitter;
+        this.userServiceApiClient = userServiceApiClient;
     }
 
     public ChatMember addNewChatMember(String requesterId, ChatMemberCreateUserRequest chatMemberCreateRequest) {
@@ -50,6 +58,14 @@ public class ControlChatMemberUserServices {
                 NotificationDto.NotificationAction.CREATED,
                 newChatMember);
         notificationService.sendToChat(chatMemberCreateRequest.chatId, notification);
+
+        UserProfileDto requester = userServiceApiClient.getUserById(requesterId);
+        UserProfileDto member = userServiceApiClient.getUserById(request.memberId);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(request.chatId);
+        event.setContent(member.name + " has been added to the chat by " + requester.name);
+        eventEmitter.emit(event);
 
         return newChatMember;
 
@@ -94,6 +110,14 @@ public class ControlChatMemberUserServices {
                 updatedChatMember);
         notificationService.sendToChat(chatId, notification);
 
+        UserProfileDto requester = userServiceApiClient.getUserById(requesterId);
+        UserProfileDto member = userServiceApiClient.getUserById(memberId);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chatId);
+        event.setContent(member.name + "\'role has been updated to " + role + " by " + requester.name);
+        eventEmitter.emit(event);
+
         return updatedChatMember;
     }
 
@@ -124,6 +148,14 @@ public class ControlChatMemberUserServices {
                 updatedChatMember);
         notificationService.sendToChat(chatId, notification);
 
+        UserProfileDto requester = userServiceApiClient.getUserById(requesterId);
+        UserProfileDto member = userServiceApiClient.getUserById(memberId);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chatId);
+        event.setContent(member.name + "\'nickname has been updated to " + nickname + " by " + requester.name);
+        eventEmitter.emit(event);
+
         return updatedChatMember;
     }
 
@@ -153,5 +185,14 @@ public class ControlChatMemberUserServices {
                 NotificationDto.NotificationAction.DELETED,
                 chatMember);
         notificationService.sendToChat(chatId, notification);
+
+        UserProfileDto requester = userServiceApiClient.getUserById(requesterId);
+        UserProfileDto member = userServiceApiClient.getUserById(memberId);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chatId);
+        event.setContent(member.name + " has been removed from the chat by " + requester.name);
+        eventEmitter.emit(event);
+
     }
 }
