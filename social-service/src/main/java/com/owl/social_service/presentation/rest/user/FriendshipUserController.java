@@ -34,7 +34,7 @@ public class FriendshipUserController {
     @GetMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendships(
-        @RequestHeader String requesterId,
+        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
@@ -54,7 +54,7 @@ public class FriendshipUserController {
     @GetMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendshipById(
-        @RequestHeader String requesterId,
+        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
         @PathVariable String id
     ) 
     {
@@ -69,7 +69,7 @@ public class FriendshipUserController {
     @GetMapping("/user/{userId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendshipWithUser(
-        @RequestHeader String requesterId,
+        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
         @PathVariable String userId
     ) 
     {
@@ -84,7 +84,7 @@ public class FriendshipUserController {
     @DeleteMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteFriendship(
-        @RequestHeader String requesterId,
+        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
         @PathVariable String id
     ) 
     {
