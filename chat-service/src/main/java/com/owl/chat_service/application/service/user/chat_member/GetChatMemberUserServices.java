@@ -81,14 +81,14 @@ public class GetChatMemberUserServices {
         if (!chat.getStatus())
             throw new IllegalArgumentException("Chat have been removed");
 
-        if (!ChatMemberValidate.validateRequesterAndMemberAreSame(requesterId, memberId)) {
-            if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId) == null)
-                throw new IllegalArgumentException("Chat member not found");
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, memberId);
 
-            if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId) == null)
-                throw new SecurityException("Requester does not have permission to access this member");
-        }
+        if (chatMember == null)
+            throw new IllegalArgumentException("Chat member not found");
 
-        return getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId); 
+        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(chatId, requesterId) == null)
+            throw new SecurityException("Requester does not have permission to access this member");
+
+        return chatMember; 
     }
 }

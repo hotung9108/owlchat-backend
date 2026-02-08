@@ -2,17 +2,13 @@ package com.owl.user_service.presentation.rest;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
 import com.owl.user_service.application.service.auth.ControlAuthService;
-import com.owl.user_service.persistence.jpa.entity.RefreshToken;
 import com.owl.user_service.presentation.dto.request.auth.AuthRequest;
 import com.owl.user_service.presentation.dto.request.auth.AuthResponse;
 import com.owl.user_service.presentation.dto.request.auth.RefreshTokenRequest;
-
-import io.swagger.v3.oas.annotations.Operation;
 
 // import org.springframework.http.ResponseEntity;
 // import org.springframework.web.bind.annotation.*;
@@ -32,7 +28,7 @@ public class AuthController {
     public AuthController(ControlAuthService controlAuthService) {
         this.controlAuthService = controlAuthService;
     }
-    @Operation(summary = "Login", security = {})
+    // @Operation(summary = "Login", security = {})
     @PostMapping("/login")
     public ResponseEntity<?> Login(@RequestBody AuthRequest authRequest) {
         try {

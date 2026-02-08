@@ -1,6 +1,7 @@
 package com.owl.chat_service.application.service.admin.message;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -9,15 +10,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
+import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
+import com.owl.chat_service.application.service.event.AddMessageEvent;
+import com.owl.chat_service.application.service.event.EventEmitter;
+import com.owl.chat_service.application.service.notification.NotificationService;
+import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.service.MessageServices;
 import com.owl.chat_service.domain.chat.validate.MessageValidate;
+import com.owl.chat_service.external_service.client.BlockUserServiceApiClient;
+import com.owl.chat_service.external_service.client.UserServiceApiClient;
 import com.owl.chat_service.persistence.mongodb.document.Chat;
+import com.owl.chat_service.persistence.mongodb.document.ChatMember;
 import com.owl.chat_service.persistence.mongodb.document.Message;
+import com.owl.chat_service.persistence.mongodb.document.Chat.ChatType;
+import com.owl.chat_service.persistence.mongodb.document.ChatMember.ChatMemberRole;
 import com.owl.chat_service.persistence.mongodb.document.Message.MessageState;
 import com.owl.chat_service.persistence.mongodb.document.Message.MessageType;
 import com.owl.chat_service.persistence.mongodb.repository.MessageRepository;
 import com.owl.chat_service.presentation.dto.admin.FileMessageAdminRequest;
 import com.owl.chat_service.presentation.dto.admin.TextMessageAdminRequest;
+import com.owl.chat_service.presentation.dto.notification.NotificationDto;
+import com.owl.chat_service.presentation.dto.notification.NotificationDto.NotificationAction;
+import com.owl.chat_service.presentation.dto.notification.NotificationDto.NotificationType;
 
 @Service
 @Transactional
@@ -25,13 +39,29 @@ public class ControlMessageAdminServices {
     private final MessageRepository messageRepository;
     private final GetChatAdminServices getChatAdminServices;
     private final GetMessageAdminServices getMessageAdminServices;
-    private final ControlChatAdminServices controlChatAdminService;
+    private final GetChatMemberAdminServices getChatMemberAdminServices;
+    private final UserServiceApiClient userServiceApiClient;
+    private final BlockUserServiceApiClient blockUserServiceApiClient;
+    private final EventEmitter emitter;
+    private final NotificationService notificationService;
 
-    public ControlMessageAdminServices(MessageRepository messageRepository, GetChatAdminServices getChatAdminServices, GetMessageAdminServices getMessageAdminServices, ControlChatAdminServices controlChatAdminService) {
+    public ControlMessageAdminServices(MessageRepository messageRepository,
+            GetChatAdminServices getChatAdminServices,
+            GetMessageAdminServices getMessageAdminServices,
+            ControlChatAdminServices controlChatAdminService,
+            GetChatMemberAdminServices getChatMemberAdminServices,
+            UserServiceApiClient userServiceApiClient,
+            BlockUserServiceApiClient blockUserServiceApiClient,
+            NotificationService notificationService, 
+            EventEmitter emitter) {
         this.messageRepository = messageRepository;
         this.getChatAdminServices = getChatAdminServices;
         this.getMessageAdminServices = getMessageAdminServices;
-        this.controlChatAdminService = controlChatAdminService;
+        this.getChatMemberAdminServices = getChatMemberAdminServices;
+        this.userServiceApiClient = userServiceApiClient;
+        this.blockUserServiceApiClient = blockUserServiceApiClient;
+        this.emitter = emitter;
+        this.notificationService = notificationService;
     }
 
     public Message addNewTextMessage(TextMessageAdminRequest textMessageRequest) {
@@ -39,22 +69,50 @@ public class ControlMessageAdminServices {
             throw new IllegalArgumentException("Invalid sender id");
         }
 
+        if (userServiceApiClient.getUserById(textMessageRequest.senderId) == null)
+            throw new IllegalArgumentException("Sender not found");
+
         if (!MessageValidate.validateChatId(textMessageRequest.chatId)) {
             throw new IllegalArgumentException("Invalid chat id");
         }
 
-        Chat exitstingChat = getChatAdminServices.getChatById(textMessageRequest.chatId);
-        if (exitstingChat == null) {
+        Chat existingChat = getChatAdminServices.getChatById(textMessageRequest.chatId);
+        if (existingChat == null) {
             throw new IllegalArgumentException("Chat does not exists");
         }
 
-        if (!exitstingChat.getStatus())
+        if (!existingChat.getStatus())
             throw new IllegalArgumentException("Chat have been removed");
+
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(textMessageRequest.chatId,
+                textMessageRequest.senderId);
+        if (chatMember == null)
+            throw new SecurityException("Sender does not have permission to access this chat");
+
+        if (ChatMemberServices.compareRole(chatMember.getRole(), ChatMemberRole.MEMBER) < 0)
+            throw new SecurityException("Sender does not have permission to send message in this chat");
 
         if (!MessageValidate.validateContent(textMessageRequest.content)) {
             throw new IllegalArgumentException("Invalid content");
         }
-        
+
+        if (existingChat.getType() == ChatType.PRIVATE) {
+            List<ChatMember> chatMembers = getChatMemberAdminServices.getChatMembersByChatId(existingChat.getId(), -1,
+                    10, false);
+
+            if (chatMembers == null || chatMembers.size() < 2) {
+                throw new IllegalArgumentException("Private chat must have two members");
+            }
+
+            String userA = chatMembers.get(0).getMemberId();
+            String userB = chatMembers.get(1).getMemberId();
+
+            if (blockUserServiceApiClient.getUserBlockUser(userA, userB) != null
+                    || blockUserServiceApiClient.getUserBlockUser(userB, userA) != null) {
+                throw new IllegalArgumentException("Chat members have blocked each other");
+            }
+        }
+
         Message newMessage = new Message();
         newMessage.setId(UUID.randomUUID().toString());
         newMessage.setChatId(textMessageRequest.chatId);
@@ -68,7 +126,19 @@ public class ControlMessageAdminServices {
 
         messageRepository.save(newMessage);
 
-        controlChatAdminService.updateChatNewestMessage(newMessage);
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
+
+        emitter.emit(event);
+        // controlChatAdminService.updateChatNewestMessage(newMessage);
+
+        // return newMessage;
+        NotificationDto<Message> message = new NotificationDto<>(
+                NotificationType.MESSAGE,
+                NotificationAction.CREATED,
+                newMessage);
+        notificationService.sendToChat(textMessageRequest.chatId, message);
+        notificationService.sendMessageToChat(textMessageRequest.chatId, message);
 
         return newMessage;
     }
@@ -82,6 +152,25 @@ public class ControlMessageAdminServices {
 
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("Content cannot be null");
+        }
+
+        Chat existingChat = getChatAdminServices.getChatById(existingMessage.getChatId());
+
+        if (existingChat.getType() == ChatType.PRIVATE) {
+            List<ChatMember> chatMembers = getChatMemberAdminServices.getChatMembersByChatId(existingChat.getId(), -1,
+                    10, false);
+
+            if (chatMembers == null || chatMembers.size() < 2) {
+                throw new IllegalArgumentException("Private chat must have two members");
+            }
+
+            String userA = chatMembers.get(0).getMemberId();
+            String userB = chatMembers.get(1).getMemberId();
+
+            if (blockUserServiceApiClient.getUserBlockUser(userA, userB) != null
+                    || blockUserServiceApiClient.getUserBlockUser(userB, userA) != null) {
+                throw new IllegalArgumentException("Chat members have blocked each other");
+            }
         }
 
         existingMessage.setState(MessageState.EDITED);
@@ -101,8 +190,18 @@ public class ControlMessageAdminServices {
 
         messageRepository.save(newMessage);
 
-        controlChatAdminService.updateChatNewestMessage(newMessage);
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
 
+        emitter.emit(event);
+
+        // return newMessage;
+        NotificationDto<Message> message = new NotificationDto<>(
+                NotificationType.MESSAGE,
+                NotificationAction.UPDATED,
+                newMessage);
+        notificationService.sendToChat(newMessage.getChatId(), message);
+        notificationService.sendMessageToChat(newMessage.getChatId(), message);
         return newMessage;
     }
 
@@ -113,10 +212,28 @@ public class ControlMessageAdminServices {
             throw new IllegalArgumentException("Message not found");
         }
 
+        Chat existingChat = getChatAdminServices.getChatById(existingMessage.getChatId());
+
+        if (existingChat.getType() == ChatType.PRIVATE) {
+            List<ChatMember> chatMembers = getChatMemberAdminServices.getChatMembersByChatId(existingChat.getId(), -1,
+                    10, false);
+
+            if (chatMembers == null || chatMembers.size() < 2) {
+                throw new IllegalArgumentException("Private chat must have two members");
+            }
+
+            String userA = chatMembers.get(0).getMemberId();
+            String userB = chatMembers.get(1).getMemberId();
+
+            if (blockUserServiceApiClient.getUserBlockUser(userA, userB) != null
+                    || blockUserServiceApiClient.getUserBlockUser(userB, userA) != null) {
+                throw new IllegalArgumentException("Chat members have blocked each other");
+            }
+        }
+
         existingMessage.setStatus(true);
         existingMessage.setState(MessageState.ORIGIN);
         existingMessage.setRemovedDate(null);
-        
 
         return messageRepository.save(existingMessage);
     }
@@ -137,13 +254,42 @@ public class ControlMessageAdminServices {
                 break;
         }
 
+        Chat existingChat = getChatAdminServices.getChatById(existingMessage.getChatId());
+
+        if (existingChat.getType() == ChatType.PRIVATE) {
+            List<ChatMember> chatMembers = getChatMemberAdminServices.getChatMembersByChatId(existingChat.getId(), -1,
+                    10, false);
+
+            if (chatMembers == null || chatMembers.size() < 2) {
+                throw new IllegalArgumentException("Private chat must have two members");
+            }
+
+            String userA = chatMembers.get(0).getMemberId();
+            String userB = chatMembers.get(1).getMemberId();
+
+            if (blockUserServiceApiClient.getUserBlockUser(userA, userB) != null
+                    || blockUserServiceApiClient.getUserBlockUser(userB, userA) != null) {
+                throw new IllegalArgumentException("Chat members have blocked each other");
+            }
+        }
+
         existingMessage.setStatus(false);
         existingMessage.setState(MessageState.REMOVED);
         existingMessage.setRemovedDate(Instant.now());
 
         messageRepository.save(existingMessage);
 
-        controlChatAdminService.updateChatNewestMessage(existingMessage);
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(existingMessage);
+
+        emitter.emit(event);
+    
+        NotificationDto<Message> message = new NotificationDto<>(
+                NotificationType.MESSAGE,
+                NotificationAction.DELETED,
+                existingMessage);
+        notificationService.sendToChat(existingMessage.getChatId(), message);
+        notificationService.sendMessageToChat(existingMessage.getChatId(), message);
     }
 
     public void hardDeleteMessage(String messageId) {
@@ -159,6 +305,12 @@ public class ControlMessageAdminServices {
         }
 
         messageRepository.deleteById(Objects.requireNonNull(messageId, "Message id cannot be null"));
+        NotificationDto<Message> notification = new NotificationDto<>(
+                NotificationType.MESSAGE,
+                NotificationAction.DELETED,
+                existingMessage);
+        notificationService.sendToChat(existingMessage.getChatId(), notification);
+        notificationService.sendMessageToChat(existingMessage.getChatId(), notification);
     }
 
     public Message addNewFileMessage(FileMessageAdminRequest fileMessageRequest) {
@@ -170,13 +322,21 @@ public class ControlMessageAdminServices {
             throw new IllegalArgumentException("Invalid chat id");
         }
 
-        Chat exitstingChat = getChatAdminServices.getChatById(fileMessageRequest.chatId);
-        if (exitstingChat == null) {
+        Chat existingChat = getChatAdminServices.getChatById(fileMessageRequest.chatId);
+        if (existingChat == null) {
             throw new IllegalArgumentException("Chat does not exists");
         }
 
-        if (!exitstingChat.getStatus())
+        if (!existingChat.getStatus())
             throw new IllegalArgumentException("Chat have been removed");
+
+        ChatMember chatMember = getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(fileMessageRequest.chatId,
+                fileMessageRequest.senderId);
+        if (chatMember == null)
+            throw new SecurityException("Sender does not have permission to access this chat");
+
+        if (ChatMemberServices.compareRole(chatMember.getRole(), ChatMemberRole.MEMBER) < 0)
+            throw new SecurityException("Sender does not have permission to send message in this chat");
 
         if (!MessageValidate.ValidateType(fileMessageRequest.type))
             throw new IllegalArgumentException("Invalid type");
@@ -185,7 +345,24 @@ public class ControlMessageAdminServices {
         if (type != MessageType.valueOf(fileMessageRequest.type)) {
             throw new IllegalArgumentException("Message type and file type do not match");
         }
-        
+
+        if (existingChat.getType() == ChatType.PRIVATE) {
+            List<ChatMember> chatMembers = getChatMemberAdminServices.getChatMembersByChatId(existingChat.getId(), -1,
+                    10, false);
+
+            if (chatMembers == null || chatMembers.size() < 2) {
+                throw new IllegalArgumentException("Private chat must have two members");
+            }
+
+            String userA = chatMembers.get(0).getMemberId();
+            String userB = chatMembers.get(1).getMemberId();
+
+            if (blockUserServiceApiClient.getUserBlockUser(userA, userB) != null
+                    || blockUserServiceApiClient.getUserBlockUser(userB, userA) != null) {
+                throw new IllegalArgumentException("Chat members have blocked each other");
+            }
+        }
+
         Message newMessage = new Message();
         newMessage.setId(UUID.randomUUID().toString());
         newMessage.setChatId(fileMessageRequest.chatId);
@@ -200,7 +377,62 @@ public class ControlMessageAdminServices {
 
         messageRepository.save(newMessage);
 
-        controlChatAdminService.updateChatNewestMessage(newMessage);
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
+
+        emitter.emit(event);
+
+        // Send notification to the chat topic
+        NotificationDto<Message> notification = new NotificationDto<>(
+                NotificationType.MESSAGE,
+                NotificationAction.CREATED,
+                newMessage);
+        notificationService.sendToChat(fileMessageRequest.chatId, notification);
+        notificationService.sendMessageToChat(fileMessageRequest.chatId, notification);
+        return newMessage;
+    }
+
+    public void deleteMessageByChatId(String chatId) {
+        if (chatId == null || chatId.isBlank())
+                throw new IllegalArgumentException("Chat ID cannot be null");
+        
+        messageRepository.deleteByChatId(chatId);
+    }
+
+        public Message addNewSystemMessage(String chatId, String content) {
+        if (!MessageValidate.validateChatId(chatId)) {
+            throw new IllegalArgumentException("Invalid chat id");
+        }
+
+        Chat existingChat = getChatAdminServices.getChatById(chatId);
+        if (existingChat == null) {
+            throw new IllegalArgumentException("Chat does not exists");
+        }
+
+        if (!existingChat.getStatus())
+            throw new IllegalArgumentException("Chat have been removed");
+
+        if (!MessageValidate.validateContent(content)) {
+            throw new IllegalArgumentException("Invalid content");
+        }
+
+        Message newMessage = new Message();
+        newMessage.setId(UUID.randomUUID().toString());
+        newMessage.setChatId(chatId);
+        newMessage.setStatus(true);
+        newMessage.setState(MessageState.ORIGIN);
+        newMessage.setType(MessageType.SYSTEM_MESSAGE);
+        newMessage.setContent(content);
+        newMessage.setSenderId("SYSTEM");
+        newMessage.setSentDate(Instant.now());
+        newMessage.setCreatedDate(newMessage.getSentDate());
+
+        messageRepository.save(newMessage);
+
+        AddMessageEvent event = new AddMessageEvent();
+        event.setMessage(newMessage);
+
+        emitter.emit(event);
 
         return newMessage;
     }

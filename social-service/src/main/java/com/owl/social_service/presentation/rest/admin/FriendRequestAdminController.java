@@ -7,6 +7,9 @@ import com.owl.social_service.application.admin.GetFriendRequestAdminServices;
 import com.owl.social_service.presentation.dto.FriendRequestCreateRequest;
 import com.owl.social_service.presentation.dto.FriendRequestResponseRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.Instant;
 
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,7 @@ public class FriendRequestAdminController {
     }
 
     @GetMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequests(
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
@@ -52,6 +56,7 @@ public class FriendRequestAdminController {
     }
     
     @GetMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestById(@PathVariable String id) 
     {
         try {
@@ -63,6 +68,7 @@ public class FriendRequestAdminController {
     }
 
     @GetMapping("/sender/{senderId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestsBySenderId(
         @PathVariable String senderId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -85,6 +91,7 @@ public class FriendRequestAdminController {
     }
 
     @GetMapping("/receiver/{receiverId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestsByReceiverId(
         @PathVariable String receiverId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -107,6 +114,7 @@ public class FriendRequestAdminController {
     }
 
     @GetMapping("/user/{userId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestsByUserId(
         @PathVariable String userId,
         @RequestParam(required = false, defaultValue = "0") int page,
@@ -129,6 +137,7 @@ public class FriendRequestAdminController {
     }
 
     @GetMapping("/first-user/{firstUserId}/second-user/{secondUserId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestsByUsersId(
         @PathVariable String firstUserId,
         @PathVariable String secondUserId,
@@ -152,6 +161,7 @@ public class FriendRequestAdminController {
     }
 
     @GetMapping("/sender/{senderId}/receiver/{receiverId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestFromUserToUser(
         @PathVariable String senderId,
         @PathVariable String receiverId
@@ -166,6 +176,7 @@ public class FriendRequestAdminController {
     }
 
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postFriendRequest(@RequestBody FriendRequestCreateRequest request) {
         try {
             return ResponseEntity.ok().body(controlFriendRequestAdminServices.addNewFriendRequest(request));
@@ -176,6 +187,7 @@ public class FriendRequestAdminController {
     }
 
     @PatchMapping("/{id}/response")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> patchFriendRequestStatus(@PathVariable String id, @RequestBody FriendRequestResponseRequest request) {
         try {
             return ResponseEntity.ok().body(controlFriendRequestAdminServices.updateFriendRequestStatus(id, request.response));
@@ -186,6 +198,7 @@ public class FriendRequestAdminController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteFriendRequest(@PathVariable String id) 
     {
         try {

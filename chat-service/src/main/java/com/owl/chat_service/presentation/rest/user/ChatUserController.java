@@ -12,6 +12,9 @@ import com.owl.chat_service.presentation.dto.ResourceData;
 import com.owl.chat_service.presentation.dto.ChatUpdateNameRequest;
 import com.owl.chat_service.presentation.dto.user.ChatUserRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -49,10 +52,10 @@ public class ChatUserController {
         // type
         // joinDateStart
         // joinDateEnd
-    @GetMapping("/member/{memberId}")
+    @GetMapping("/member")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatsByMemberId(
         @RequestHeader String requesterId, 
-        @PathVariable String memberId,
         @RequestParam(required = false, defaultValue = "") String keywords,
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
@@ -63,7 +66,7 @@ public class ChatUserController {
     ) 
     {
         try {
-            return ResponseEntity.ok().body(getChatUserServices.getChatsByMemberId(requesterId, memberId, keywords, page, size, ascSort, type, joinDateStart, joinDateEnd));
+            return ResponseEntity.ok().body(getChatUserServices.getChatsByMemberId(requesterId, keywords, page, size, ascSort, type, joinDateStart, joinDateEnd));
         }
         catch (Exception e) {
             return ResponseEntity.badRequest().body(e);
@@ -74,6 +77,7 @@ public class ChatUserController {
         // requester id
         // member id
     @GetMapping("/{chatId}")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatByChatId(@RequestHeader String requesterId, @PathVariable String chatId) {
         try {
             return ResponseEntity.ok().body(getChatUserServices.getChatById(requesterId, chatId));
@@ -87,6 +91,7 @@ public class ChatUserController {
         // requester id
         // avatar
     @GetMapping("/{chatId}/avatar")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatAvatar(@RequestHeader String requesterId, @PathVariable String chatId) {
         try {
             ResourceData data = getChatUserServices.getChatAvatar(requesterId, chatId);
@@ -109,6 +114,7 @@ public class ChatUserController {
             // name
             // chat member id list
     @PostMapping("")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> postChat(@RequestHeader String requesterId, @RequestBody ChatUserRequest chatRequest) {
         try {
             return ResponseEntity.ok().body(controlChatUserServices.addNewChat(requesterId, chatRequest));
@@ -123,7 +129,8 @@ public class ChatUserController {
         // chat id
         // chat name
     @PatchMapping("/{chatId}/name")
-    public ResponseEntity<?> patchChatName(@RequestHeader String requesterId, @RequestHeader String chatId, @RequestBody ChatUpdateNameRequest name) {
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> patchChatName(@RequestHeader String requesterId, @PathVariable String chatId, @RequestBody ChatUpdateNameRequest name) {
         try {
             return ResponseEntity.ok().body(controlChatUserServices.updateChatName(requesterId, chatId, name.name));
         }
@@ -137,6 +144,7 @@ public class ChatUserController {
         // chat id
         // chat avatar
     @PostMapping(value = "/{chatId}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<String> patchChatAvatar(@RequestHeader String requesterId, @PathVariable String chatId, @RequestPart("file") MultipartFile avatarFile) {
         try {
             controlChatUserServices.updateChatAvatarFile(requesterId, chatId, avatarFile);
@@ -156,6 +164,7 @@ public class ChatUserController {
         // requester id
         // chat id
     @DeleteMapping("/{chatId}/deactivate")
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<String> deactivateChat(@RequestHeader String requesterId, @PathVariable String chatId) {
         try {
             controlChatUserServices.deleteChat(requesterId, chatId);

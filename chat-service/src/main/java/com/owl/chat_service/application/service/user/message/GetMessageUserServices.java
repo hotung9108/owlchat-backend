@@ -82,6 +82,9 @@ public class GetMessageUserServices {
 
         if (message == null) 
             throw new IllegalArgumentException("Message not found");
+        
+        if (getChatMemberAdminServices.getChatMemberByChatIdAndMemberId(message.getChatId(), requesterId) == null)
+            throw new SecurityException("Requester does not have permission to access this message");
 
         return getMessageAdminServices.getMessageFile(messageId);
     }
