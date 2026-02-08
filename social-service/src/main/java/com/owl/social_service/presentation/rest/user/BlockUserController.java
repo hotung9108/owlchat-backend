@@ -34,7 +34,7 @@ public class BlockUserController {
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}")
     public ResponseEntity<?>  getBlockById(
-        @RequestHeader String requesterId,
+        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
         @PathVariable String id
     ) 
     {
@@ -49,7 +49,7 @@ public class BlockUserController {
     @GetMapping("/blocked")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getUserBlocked(
-        @RequestHeader String requesterId,
+        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
         @RequestParam(required = false, defaultValue = "0") int page,
         @RequestParam(required = false, defaultValue = "10") int size,
         @RequestParam(required = false, defaultValue = "true") boolean ascSort,
@@ -67,7 +67,7 @@ public class BlockUserController {
 
     @PostMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> postBlock(@RequestHeader String requesterId, @RequestBody BlockCreateUserRequest request) {
+    public ResponseEntity<?> postBlock(@RequestHeader(value = "X-Account-Id", required = false) String requesterId,  @RequestBody BlockCreateUserRequest request) {
         try {
             return ResponseEntity.ok().body(controlBlockUserServices.addNewBlock(requesterId, request.blockedId));
         }
@@ -79,7 +79,7 @@ public class BlockUserController {
     @DeleteMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteBlock(
-        @RequestHeader String requesterId,
+        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
         @PathVariable String id
     ) 
     {

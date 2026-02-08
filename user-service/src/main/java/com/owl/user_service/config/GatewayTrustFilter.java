@@ -21,6 +21,7 @@ public class GatewayTrustFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         if (path.startsWith("/auth")
                 || (path.equals("/account") && "POST".equalsIgnoreCase(method))
+                || (path.equals("/user") && "POST".equalsIgnoreCase(method))
                 || path.contains("/swagger-ui")
                 || path.contains("/v3/api-docs")) {
             filterChain.doFilter(request, response);
