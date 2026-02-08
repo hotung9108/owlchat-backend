@@ -47,10 +47,10 @@ public class ControlBlockAdminServices {
         if (!FriendshipValidate.validateUserId(request.blockedId))
             throw new IllegalArgumentException("Invalid blocked id");
 
-        if (userServiceApiClient.getUserById(request.blockerId) != null) 
+        if (userServiceApiClient.getUserById(request.blockerId) == null) 
             throw new IllegalArgumentException("Blocker does not exists");
 
-        if (userServiceApiClient.getUserById(request.blockedId) != null) 
+        if (userServiceApiClient.getUserById(request.blockedId) == null) 
             throw new IllegalArgumentException("Blocked does not exists");
 
         Block existingBlock = getBlockAdminServices.getUserBlockUser(request.blockerId, request.blockedId);
