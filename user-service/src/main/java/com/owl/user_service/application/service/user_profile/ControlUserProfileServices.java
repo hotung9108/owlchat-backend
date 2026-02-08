@@ -14,8 +14,10 @@ import com.owl.user_service.infrastructure.config.UserProfileServicesConfig;
 import com.owl.user_service.persistence.jpa.entity.Account;
 import com.owl.user_service.persistence.jpa.entity.UserProfile;
 import com.owl.user_service.persistence.jpa.repository.UserProfileJpaRepository;
+import com.owl.user_service.presentation.dto.request.AccountRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
+import com.owl.user_service.presentation.dto.request.auth.SignUpRequest;
 
 import jakarta.transaction.Transactional;
 
@@ -41,6 +43,9 @@ public class ControlUserProfileServices {
         {
             Account newAccount = controlAccountServices.addAccount(userProfileCreateRequest.getAccount());
 
+            if (userProfileJpaRepository.findByEmail(userProfileCreateRequest.getUserProfile().getEmail()) != null) 
+                throw new IllegalArgumentException("Email have already been taken");
+
             return userProfileJpaRepository.save(userProfileServices.CreateNewUserProfile(newAccount, userProfileCreateRequest.getUserProfile()));
         }
         catch (Exception e) {
@@ -60,6 +65,9 @@ public class ControlUserProfileServices {
         }
 
         try {
+            if (userProfileJpaRepository.findByEmail(userProfileRequest.getEmail()) != null) 
+                throw new IllegalArgumentException("Email have already been taken");
+
             return userProfileJpaRepository.save(userProfileServices.CreateNewUserProfile(account, userProfileRequest));
         }
         catch (Exception e) {
@@ -77,6 +85,9 @@ public class ControlUserProfileServices {
         if (!userProfileServices.ValidateEmail(userProfileRequest.getEmail())) {
             throw new IllegalArgumentException("Invalid email");
         }
+        
+        if (userProfileJpaRepository.findByEmail(userProfileRequest.getEmail()) != null) 
+            throw new IllegalArgumentException("Email have already been taken");
 
         if (!userProfileServices.ValidatePhoneNumber(userProfileRequest.getPhoneNumber())) {
             throw new IllegalArgumentException("Invalid phone number");
@@ -159,5 +170,24 @@ public class ControlUserProfileServices {
         }
 
         updateAvatarUserProfile(id, userProfileServices.SaveUserAvatarFile(id, file));
+    }
+
+    public UserProfile SignUp(SignUpRequest request) {
+        AccountRequest accountRequest = new AccountRequest();
+        accountRequest.setRole("USER");
+        accountRequest.setUsername(request.getUsername());
+        accountRequest.setPassword(request.getPassword());
+        Account newAccount = controlAccountServices.addAccount(accountRequest);
+
+        if (!userProfileServices.ValidateEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Invalid email");
+        }
+
+        if (userProfileJpaRepository.findByEmail(request.getEmail()) != null) 
+            throw new IllegalArgumentException("Email have already been taken");
+
+        UserProfile userProfile = new UserProfile(newAccount, null, null, null, null, request.getEmail(), null);
+
+        return userProfileJpaRepository.save(userProfile);
     }
 }
