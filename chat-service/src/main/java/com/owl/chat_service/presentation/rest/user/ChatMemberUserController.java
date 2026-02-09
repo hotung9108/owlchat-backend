@@ -30,147 +30,185 @@ public class ChatMemberUserController {
     private final ControlChatMemberUserServices controlChatMemberUserServices;
     private final GetChatMemberUserServices getChatMemberUserServices;
 
-    public ChatMemberUserController(GetChatMemberUserServices getChatMemberUserServices, ControlChatMemberUserServices controlChatMemberUserServices) {
+    public ChatMemberUserController(GetChatMemberUserServices getChatMemberUserServices,
+            ControlChatMemberUserServices controlChatMemberUserServices) {
         this.getChatMemberUserServices = getChatMemberUserServices;
         this.controlChatMemberUserServices = controlChatMemberUserServices;
     }
 
     // get chat member by member id
-        // requester id
-        // member id
-        // keywords
-        // page
-        // size
-        // ascSort
+    // requester id
+    // member id
+    // keywords
+    // page
+    // size
+    // ascSort
     @GetMapping("/")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatMembersByMemberId(
-        @RequestHeader String requesterId,
-        @RequestParam(required = false, defaultValue = "") String keywords,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) String role,
-        @RequestParam(required = false) Instant joinDateStart,
-        @RequestParam(required = false) Instant joinDateEnd
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestParam(required = false, defaultValue = "") String keywords,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) Instant joinDateStart,
+            @RequestParam(required = false) Instant joinDateEnd
 
     ) {
         try {
-            return ResponseEntity.ok().body(getChatMemberUserServices.getChatMembersByMemberId(requesterId, keywords, page, size, ascSort, role, joinDateStart, joinDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getChatMemberUserServices.getChatMembersByMemberId(finalRequesterId, keywords,
+                            page, size, ascSort, role, joinDateStart, joinDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // get chat member by chat id
-        // requester id
-        // chat id
-        // keywords
-        // page
-        // size
-        // ascSort
-        // role
-        // joinDateStart
-        // joinDateEnd
+    // requester id
+    // chat id
+    // keywords
+    // page
+    // size
+    // ascSort
+    // role
+    // joinDateStart
+    // joinDateEnd
     @GetMapping("/chat/{chatId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatMembersByChatId(
-        @RequestHeader String requesterId, 
-        @PathVariable String chatId,
-        @RequestParam(required = false) String keywords,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) String role,
-        @RequestParam(required = false) Instant joinDateStart,
-        @RequestParam(required = false) Instant joinDateEnd
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String chatId,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) Instant joinDateStart,
+            @RequestParam(required = false) Instant joinDateEnd) {
         try {
-            return ResponseEntity.ok().body(getChatMemberUserServices.getChatMembersByChatId(requesterId, chatId, keywords, page, size, ascSort, role, joinDateStart, joinDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok().body(getChatMemberUserServices.getChatMembersByChatId(finalRequesterId, chatId,
+                    keywords, page, size, ascSort, role, joinDateStart, joinDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // get chat member by chat id and member id
-        // requester id
-        // chat id
-        // member id
+    // requester id
+    // chat id
+    // member id
     @GetMapping("/{memberId}/chat/{chatId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> getChatMemberByChatIdAndMemberId(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId) {
+    public ResponseEntity<?> getChatMemberByChatIdAndMemberId(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String memberId,
+            @PathVariable String chatId) {
         try {
-            return ResponseEntity.ok().body(getChatMemberUserServices.getChatMemberByChatIdAndMemberId(requesterId, memberId, chatId));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok()
+                    .body(getChatMemberUserServices.getChatMemberByChatIdAndMemberId(finalRequesterId, memberId,
+                            chatId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // post chat member
-        // requester id
-        // chat member create request
-            // member id
-            // chat id
+    // requester id
+    // chat member create request
+    // member id
+    // chat id
     @PostMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> postChatMember(@RequestHeader String requesterId, @RequestBody ChatMemberCreateUserRequest chatMemberCreateRequest) {
+    public ResponseEntity<?> postChatMember(
+
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestBody ChatMemberCreateUserRequest chatMemberCreateRequest) {
         try {
-            return ResponseEntity.ok().body(controlChatMemberUserServices.addNewChatMember(requesterId, chatMemberCreateRequest));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok()
+                    .body(controlChatMemberUserServices.addNewChatMember(finalRequesterId, chatMemberCreateRequest));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        }   
+        }
     }
 
     // patch role
-        // requester id
-        // member id
-        // chat id
-        // role
+    // requester id
+    // member id
+    // chat id
+    // role
     @PatchMapping("/{memberId}/chat/{chatId}/role")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> patchChatMemberRole(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateRoleRequest role) {
+    public ResponseEntity<?> patchChatMemberRole(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String memberId,
+            @PathVariable String chatId,
+            @RequestBody ChatMemberUpdateRoleRequest role) {
         try {
-            return ResponseEntity.ok().body(controlChatMemberUserServices.updateChatMemberRole(requesterId, memberId, chatId, role.role));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok()
+                    .body(controlChatMemberUserServices.updateChatMemberRole(finalRequesterId, memberId, chatId,
+                            role.role));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        }   
+        }
     }
 
     // patch nickname
-        // requester id
-        // member id
-        // chat id
-        // nickname
+    // requester id
+    // member id
+    // chat id
+    // nickname
     @PatchMapping("/{memberId}/chat/{chatId}/nickname")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> patchChatMemberNickname(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId, @RequestBody ChatMemberUpdateNicknameRequest nickname)  {
+    public ResponseEntity<?> patchChatMemberNickname(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String memberId,
+            @PathVariable String chatId,
+            @RequestBody ChatMemberUpdateNicknameRequest nickname) {
         try {
-            return ResponseEntity.ok().body(controlChatMemberUserServices.updateChatMemberNickname(requesterId, memberId, chatId, nickname.nickname));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok().body(controlChatMemberUserServices.updateChatMemberNickname(finalRequesterId,
+                    memberId, chatId, nickname.nickname));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        }   
+        }
     }
 
     // delete chat member
-        // requester id
-        // member id
-        // chat id
+    // requester id
+    // member id
+    // chat id
     @DeleteMapping("/{memberId}/chat/{chatId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> deleteChatMember(@RequestHeader String requesterId, @PathVariable String memberId, @PathVariable String chatId)  {
+    public ResponseEntity<?> deleteChatMember(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String memberId,
+            @PathVariable String chatId) {
         try {
-            controlChatMemberUserServices.deleteChatMember(requesterId, memberId, chatId);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            controlChatMemberUserServices.deleteChatMember(finalRequesterId, memberId, chatId);
             return ResponseEntity.ok().body("Chat member deleted successfully");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        }   
+        }
     }
 }

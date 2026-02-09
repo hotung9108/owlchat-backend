@@ -23,14 +23,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 @RestController
 @RequestMapping("/friend-request")
 public class FriendRequestUserController {
     private final GetFriendRequestUserServices getFriendRequestUserServices;
     private final ControlFriendRequestUserServices controlFriendRequestUserServices;
 
-    public FriendRequestUserController(GetFriendRequestUserServices getFriendRequestUserServices, ControlFriendRequestUserServices controlFriendRequestUserServices) {
+    public FriendRequestUserController(GetFriendRequestUserServices getFriendRequestUserServices,
+            ControlFriendRequestUserServices controlFriendRequestUserServices) {
         this.getFriendRequestUserServices = getFriendRequestUserServices;
         this.controlFriendRequestUserServices = controlFriendRequestUserServices;
     }
@@ -38,22 +38,22 @@ public class FriendRequestUserController {
     @GetMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequests(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) String keywords,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) Instant createdDateStart,
-        @RequestParam(required = false) Instant createdDateEnd,
-        @RequestParam(required = false) Instant updatedDateStart,
-        @RequestParam(required = false) Instant updatedDateEnd
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Instant createdDateStart,
+            @RequestParam(required = false) Instant createdDateEnd,
+            @RequestParam(required = false) Instant updatedDateStart,
+            @RequestParam(required = false) Instant updatedDateEnd) {
         try {
-            return ResponseEntity.ok().body(getFriendRequestUserServices.getFriendRequests(requesterId, page, size, ascSort, keywords, status, createdDateStart, createdDateEnd, updatedDateStart, updatedDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok().body(getFriendRequestUserServices.getFriendRequests(finalRequesterId, page, size,
+                    ascSort, keywords, status, createdDateStart, createdDateEnd, updatedDateStart, updatedDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -61,14 +61,13 @@ public class FriendRequestUserController {
     @GetMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestById(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @PathVariable String id
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String id) {
         try {
-            return ResponseEntity.ok().body(getFriendRequestUserServices.getFriendRequestById(requesterId, id));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok().body(getFriendRequestUserServices.getFriendRequestById(finalRequesterId, id));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -76,22 +75,24 @@ public class FriendRequestUserController {
     @GetMapping("/send")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getSendFriendRequests(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) String keywords,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) Instant createdDateStart,
-        @RequestParam(required = false) Instant createdDateEnd,
-        @RequestParam(required = false) Instant updatedDateStart,
-        @RequestParam(required = false) Instant updatedDateEnd
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Instant createdDateStart,
+            @RequestParam(required = false) Instant createdDateEnd,
+            @RequestParam(required = false) Instant updatedDateStart,
+            @RequestParam(required = false) Instant updatedDateEnd) {
         try {
-            return ResponseEntity.ok().body(getFriendRequestUserServices.getSendFriendRequests(requesterId, page, size, ascSort, keywords, status, createdDateStart, createdDateEnd, updatedDateStart, updatedDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getFriendRequestUserServices.getSendFriendRequests(finalRequesterId, page, size,
+                            ascSort, keywords, status, createdDateStart, createdDateEnd, updatedDateStart,
+                            updatedDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -99,22 +100,23 @@ public class FriendRequestUserController {
     @GetMapping("/receive")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getReceiveFriendRequests(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) String keywords,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) Instant createdDateStart,
-        @RequestParam(required = false) Instant createdDateEnd,
-        @RequestParam(required = false) Instant updatedDateStart,
-        @RequestParam(required = false) Instant updatedDateEnd
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Instant createdDateStart,
+            @RequestParam(required = false) Instant createdDateEnd,
+            @RequestParam(required = false) Instant updatedDateStart,
+            @RequestParam(required = false) Instant updatedDateEnd) {
         try {
-            return ResponseEntity.ok().body(getFriendRequestUserServices.getReceiveFriendRequests(requesterId, page, size, ascSort, keywords, status, createdDateStart, createdDateEnd, updatedDateStart, updatedDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getFriendRequestUserServices.getReceiveFriendRequests(finalRequesterId, page, size, ascSort,
+                            keywords, status, createdDateStart, createdDateEnd, updatedDateStart, updatedDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -122,23 +124,25 @@ public class FriendRequestUserController {
     @GetMapping("/user/{userId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestsWithUser(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @PathVariable String userId,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) String keywords,
-        @RequestParam(required = false) String status,
-        @RequestParam(required = false) Instant createdDateStart,
-        @RequestParam(required = false) Instant createdDateEnd,
-        @RequestParam(required = false) Instant updatedDateStart,
-        @RequestParam(required = false) Instant updatedDateEnd
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String userId,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Instant createdDateStart,
+            @RequestParam(required = false) Instant createdDateEnd,
+            @RequestParam(required = false) Instant updatedDateStart,
+            @RequestParam(required = false) Instant updatedDateEnd) {
         try {
-            return ResponseEntity.ok().body(getFriendRequestUserServices.getFriendRequestsWithUserId(requesterId, userId, page, size, ascSort, keywords, status, createdDateStart, createdDateEnd, updatedDateStart, updatedDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getFriendRequestUserServices.getFriendRequestsWithUserId(finalRequesterId, userId, page, size,
+                            ascSort, keywords, status, createdDateStart, createdDateEnd, updatedDateStart,
+                            updatedDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -146,14 +150,15 @@ public class FriendRequestUserController {
     @GetMapping("/receiver/{receiverId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestFromRequesterToUser(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @PathVariable String receiverId
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String receiverId) {
         try {
-            return ResponseEntity.ok().body(getFriendRequestUserServices.getFriendRequestFromRequesterToUser(requesterId, receiverId));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getFriendRequestUserServices.getFriendRequestFromRequesterToUser(finalRequesterId,
+                            receiverId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -161,51 +166,60 @@ public class FriendRequestUserController {
     @GetMapping("/sender/{senderId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getFriendRequestFromUserToRequester(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @PathVariable String senderId
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String senderId) {
         try {
-            return ResponseEntity.ok().body(getFriendRequestUserServices.getFriendRequestFromUserToRequester(requesterId, senderId));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getFriendRequestUserServices.getFriendRequestFromUserToRequester(finalRequesterId, senderId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> postFriendRequest(@RequestHeader(value = "X-Account-Id", required = false) String requesterId,  @RequestBody FriendRequestCreateUserRequest request) {
+    public ResponseEntity<?> postFriendRequest(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId, @RequestBody FriendRequestCreateUserRequest request) {
         try {
-            return ResponseEntity.ok().body(controlFriendRequestUserServices.addNewFriendRequest(requesterId, request.receiverId));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(controlFriendRequestUserServices.addNewFriendRequest(finalRequesterId, request.receiverId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PatchMapping("/{id}/response")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> patchFriendRequestStatus(@RequestHeader(value = "X-Account-Id", required = false) String requesterId,  @PathVariable String id, @RequestBody FriendRequestResponseRequest request) {
+    public ResponseEntity<?> patchFriendRequestStatus(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId, @PathVariable String id,
+            @RequestBody FriendRequestResponseRequest request) {
         try {
-            return ResponseEntity.ok().body(controlFriendRequestUserServices.updateFriendRequest(requesterId, id, request.response));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(controlFriendRequestUserServices.updateFriendRequest(finalRequesterId, id, request.response));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> deleteFriendRequest(@RequestHeader(value = "X-Account-Id", required = false) String requesterId,  @PathVariable String id) 
-    {
+    public ResponseEntity<?> deleteFriendRequest(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String id) {
         try {
-            controlFriendRequestUserServices.deleteFriendRequest(requesterId, id);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            controlFriendRequestUserServices.deleteFriendRequest(finalRequesterId, id);
             return ResponseEntity.ok().body("Friend request deleted successfully");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+
 }
