@@ -27,21 +27,23 @@ public class BlockUserController {
     private final ControlBlockUserServices controlBlockUserServices;
 
     private final GetBlockUserServices getBlockUserServices;
-    public BlockUserController(GetBlockUserServices getBlockUserServices, ControlBlockUserServices controlBlockUserServices) {
+
+    public BlockUserController(GetBlockUserServices getBlockUserServices,
+            ControlBlockUserServices controlBlockUserServices) {
         this.getBlockUserServices = getBlockUserServices;
         this.controlBlockUserServices = controlBlockUserServices;
     }
+
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}")
-    public ResponseEntity<?>  getBlockById(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @PathVariable String id
-    ) 
-    {
+    public ResponseEntity<?> getBlockById(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String id) {
         try {
-            return ResponseEntity.ok().body(getBlockUserServices.getBlockById(requesterId, id));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok().body(getBlockUserServices.getBlockById(finalRequesterId, id));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -49,45 +51,47 @@ public class BlockUserController {
     @GetMapping("/blocked")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getUserBlocked(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false) Instant createdDateStart,
-        @RequestParam(required = false) Instant createdDateEnd
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false) Instant createdDateStart,
+            @RequestParam(required = false) Instant createdDateEnd) {
         try {
-            return ResponseEntity.ok().body(getBlockUserServices.getUserBlocked(requesterId, page, size, ascSort, createdDateStart, createdDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok().body(getBlockUserServices.getUserBlocked(finalRequesterId, page, size, ascSort,
+                    createdDateStart, createdDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> postBlock(@RequestHeader(value = "X-Account-Id", required = false) String requesterId,  @RequestBody BlockCreateUserRequest request) {
+    public ResponseEntity<?> postBlock(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestBody BlockCreateUserRequest request) {
         try {
-            return ResponseEntity.ok().body(controlBlockUserServices.addNewBlock(requesterId, request.blockedId));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok().body(controlBlockUserServices.addNewBlock(finalRequesterId, request.blockedId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+
     @DeleteMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> deleteBlock(
-        @RequestHeader(value = "X-Account-Id", required = false) String requesterId, 
-        @PathVariable String id
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String id) {
         try {
-            controlBlockUserServices.deleteBlock(requesterId, id);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            controlBlockUserServices.deleteBlock(finalRequesterId, id);
             return ResponseEntity.ok().body("Block deleted successfully");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

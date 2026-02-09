@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
 @RequestMapping("/chat")
 public class ChatUserController {
@@ -38,119 +37,146 @@ public class ChatUserController {
     private final ControlChatUserServices controlChatUserServices;
     private final GetChatUserServices getChatUserServices;
 
-    public ChatUserController(GetChatUserServices getChatUserServices, ControlChatUserServices controlChatUserServices) {
+    public ChatUserController(GetChatUserServices getChatUserServices,
+            ControlChatUserServices controlChatUserServices) {
         this.getChatUserServices = getChatUserServices;
-        this.controlChatUserServices = controlChatUserServices;}
+        this.controlChatUserServices = controlChatUserServices;
+    }
 
     // get chats by member id
-        // requester id
-        // member id
-        // keywords
-        // page
-        // size
-        // ascSort
-        // type
-        // joinDateStart
-        // joinDateEnd
-    @GetMapping("/member")
+    // requester id
+    // member id
+    // keywords
+    // page
+    // size
+    // ascSort
+    // type
+    // joinDateStart
+    // joinDateEnd
+    @GetMapping("/member/{memberId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> getChatsByMemberId(
-        @RequestHeader String requesterId, 
-        @RequestParam(required = false, defaultValue = "") String keywords,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "false") boolean ascSort,
-        @RequestParam(required = false) String type,
-        @RequestParam(required = false) Instant joinDateStart,
-        @RequestParam(required = false) Instant joinDateEnd
-    ) 
-    {
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String memberId,
+            @RequestParam(required = false, defaultValue = "") String keywords,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "false") boolean ascSort,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Instant joinDateStart,
+            @RequestParam(required = false) Instant joinDateEnd) {
         try {
-            return ResponseEntity.ok().body(getChatUserServices.getChatsByMemberId(requesterId, keywords, page, size, ascSort, type, joinDateStart, joinDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getChatUserServices.getChatsByMemberId(finalRequesterId, keywords, page, size,
+                            ascSort, type, joinDateStart, joinDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e);
         }
     }
-    
+
     // get chat by chat id
-        // requester id
-        // member id
+    // requester id
+    // member id
     @GetMapping("/{chatId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> getChatByChatId(@RequestHeader String requesterId, @PathVariable String chatId) {
+    public ResponseEntity<?> getChatByChatId(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String chatId) {
         try {
-            return ResponseEntity.ok().body(getChatUserServices.getChatById(requesterId, chatId));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok().body(getChatUserServices.getChatById(finalRequesterId, chatId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // get chat avatar
-        // requester id
-        // avatar
+    // requester id
+    // avatar
     @GetMapping("/{chatId}/avatar")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> getChatAvatar(@RequestHeader String requesterId, @PathVariable String chatId) {
+    public ResponseEntity<?> getChatAvatar(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String chatId) {
         try {
-            ResourceData data = getChatUserServices.getChatAvatar(requesterId, chatId);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            ResourceData data = getChatUserServices.getChatAvatar(finalRequesterId, chatId);
 
             String mediaType = data.contentType /* avatar mediaType */;
-            
+
             Objects.requireNonNull(mediaType, "mediaType must not be null");
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(mediaType))
                     .body(data.resource /* avatar resource */);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // post chat
-        // chat create request
-            // name
-            // chat member id list
+    // chat create request
+    // name
+    // chat member id list
     @PostMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> postChat(@RequestHeader String requesterId, @RequestBody ChatUserRequest chatRequest) {
+    public ResponseEntity<?> postChat(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestBody ChatUserRequest chatRequest) {
         try {
-            return ResponseEntity.ok().body(controlChatUserServices.addNewChat(requesterId, chatRequest));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok().body(controlChatUserServices.addNewChat(finalRequesterId, chatRequest));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // patch chat name
-        // requester id
-        // chat id
-        // chat name
+    // requester id
+    // chat id
+    // chat name
     @PatchMapping("/{chatId}/name")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> patchChatName(@RequestHeader String requesterId, @PathVariable String chatId, @RequestBody ChatUpdateNameRequest name) {
+    public ResponseEntity<?> patchChatName(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestHeader String chatId,
+            @RequestBody ChatUpdateNameRequest name) {
         try {
-            return ResponseEntity.ok().body(controlChatUserServices.updateChatName(requesterId, chatId, name.name));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok()
+                    .body(controlChatUserServices.updateChatName(finalRequesterId, chatId, name.name));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // patch chat avatar
-        // requester id
-        // chat id
-        // chat avatar
+    // requester id
+    // chat id
+    // chat avatar
     @PostMapping(value = "/{chatId}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<String> patchChatAvatar(@RequestHeader String requesterId, @PathVariable String chatId, @RequestPart("file") MultipartFile avatarFile) {
+    public ResponseEntity<String> patchChatAvatar(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String chatId,
+            @RequestPart("file") MultipartFile avatarFile) {
         try {
-            controlChatUserServices.updateChatAvatarFile(requesterId, chatId, avatarFile);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            controlChatUserServices.updateChatAvatarFile(finalRequesterId, chatId, avatarFile);
             return ResponseEntity.ok("Upload avatar successfully");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -159,18 +185,22 @@ public class ChatUserController {
     public ResponseEntity<?> handleMaxSize(MaxUploadSizeExceededException e) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File size exceeds 10MB limit");
     }
-    
+
     // deactivate chat
-        // requester id
-        // chat id
+    // requester id
+    // chat id
     @DeleteMapping("/{chatId}/deactivate")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<String> deactivateChat(@RequestHeader String requesterId, @PathVariable String chatId) {
+    public ResponseEntity<String> deactivateChat(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String chatId) {
         try {
-            controlChatUserServices.deleteChat(requesterId, chatId);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            controlChatUserServices.deleteChat(finalRequesterId, chatId);
             return ResponseEntity.ok("Deactivate chat successfully");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
