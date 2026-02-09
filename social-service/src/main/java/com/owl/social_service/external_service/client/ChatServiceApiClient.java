@@ -22,7 +22,8 @@ public class ChatServiceApiClient {
     public ChatDto createChat(String requesterId, ChatCreateRequestDto chatCreateRequestDto) {
         return webClient.post() // 1. Changed to POST for creation
             .uri("/chat")
-            .header("requesterId", requesterId)
+            // .header("requesterId", requesterId)
+            .header("X-Account-Id", requesterId)
             .bodyValue(chatCreateRequestDto) // 2. This adds your DTO as the JSON body
             .exchangeToMono(response -> {
                 if (response == null)

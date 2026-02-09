@@ -48,7 +48,7 @@ public class ControlMessageAdminServices {
     public ControlMessageAdminServices(MessageRepository messageRepository,
             GetChatAdminServices getChatAdminServices,
             GetMessageAdminServices getMessageAdminServices,
-            ControlChatAdminServices controlChatAdminService,
+            // ControlChatAdminServices controlChatAdminService,
             GetChatMemberAdminServices getChatMemberAdminServices,
             UserServiceApiClient userServiceApiClient,
             BlockUserServiceApiClient blockUserServiceApiClient,
