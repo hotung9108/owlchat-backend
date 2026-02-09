@@ -1,7 +1,6 @@
 package com.owl.user_service.presentation.rest;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,12 +11,14 @@ import com.owl.user_service.application.service.user_profile.GetUserProfileServi
 import com.owl.user_service.presentation.dto.request.UserProfileCreateRequest;
 import com.owl.user_service.presentation.dto.request.UserProfileRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.time.LocalDate;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,24 +29,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
-
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(
-    origins = "http://localhost:8080",
-    allowedHeaders = "*",
-    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
-    allowCredentials = "true"
-)
 public class UserProfileController {
     private final GetUserProfileServices getUserProfileService;
     private final ControlUserProfileServices controlUserProfileServices;
 
-    public UserProfileController(GetUserProfileServices getUserProfileService, ControlUserProfileServices controlUserProfileServices) {
+    public UserProfileController(GetUserProfileServices getUserProfileService,
+            ControlUserProfileServices controlUserProfileServices) {
         this.getUserProfileService = getUserProfileService;
         this.controlUserProfileServices = controlUserProfileServices;
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("")
     public ResponseEntity<?> getProfiles(
         @RequestParam(required = false, defaultValue = "") String keywords, 
@@ -65,7 +60,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}")
     public ResponseEntity<?> getProfileById(@PathVariable String id) {
         try 
@@ -76,7 +71,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("")
     public ResponseEntity<?> addNewProfile(@RequestBody UserProfileCreateRequest userProfileCreateRequest) {
         try 
@@ -87,7 +82,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/account/{id}")
     public ResponseEntity<?> addNewProfileToAccount(@PathVariable String id, @RequestBody UserProfileRequest userProfileRequest) {
         try 
@@ -98,7 +93,7 @@ public class UserProfileController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable String id, @RequestBody UserProfileRequest userProfileRequest) {
         try {
@@ -118,19 +113,17 @@ public class UserProfileController {
     //         return ResponseEntity.badRequest().body(e.getMessage());
     //     }
     // }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProfile(@PathVariable String id) {
-        try 
-        {
+        try {
             controlUserProfileServices.deleteUserProfile(id);
-            return ResponseEntity.ok("User profile deleted successfully");  
-        }
-        catch (Exception e) {
+            return ResponseEntity.ok("User profile deleted successfully");
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping(value = "/{id}/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadUserAvatar(@PathVariable String id, @RequestPart("file") MultipartFile avatarFile) {
         try {
@@ -146,7 +139,7 @@ public class UserProfileController {
     public ResponseEntity<?> handleMaxSize(MaxUploadSizeExceededException e) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File size exceeds 10MB limit");
     }
-    
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}/avatar")
     public ResponseEntity<?> getUserAvatar(@PathVariable String id) {
         try {
