@@ -30,7 +30,7 @@ public interface UserProfileJpaRepository extends JpaRepository<UserProfile, Str
     public List<UserProfile> findByDateOfBirthBetween(java.time.LocalDate startDate, java.time.LocalDate endDate);
     
     //findByEmail
-    public List<UserProfile> findByEmail(String email);
+    public UserProfile findByEmail(String email);
 
     //findByEmailContainingIgnoreCase
     public List<UserProfile> findByEmailContainingIgnoreCase(String emailKeyword);

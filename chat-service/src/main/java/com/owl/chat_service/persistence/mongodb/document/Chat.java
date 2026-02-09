@@ -1,6 +1,7 @@
 package com.owl.chat_service.persistence.mongodb.document;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -114,4 +115,16 @@ public class Chat {
         this.newestMessageId = newestMessageId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Chat chat = (Chat) o;
+        return id == chat.getId(); // Compare by ID
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Generate hash based on ID
+    }
 }

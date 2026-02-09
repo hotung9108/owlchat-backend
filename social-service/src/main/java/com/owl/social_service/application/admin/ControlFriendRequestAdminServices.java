@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.owl.social_service.application.notification.NotificationService;
+import com.owl.social_service.application.notification.dto.NotificationDto.NotificationAction;
 import com.owl.social_service.domain.validate.FriendRequestValidate;
 import com.owl.social_service.external_service.client.UserServiceApiClient;
 import com.owl.social_service.persistence.mongodb.document.FriendRequest;
@@ -25,14 +27,16 @@ public class ControlFriendRequestAdminServices {
     private final ControlFriendshipAdminServices controlFriendshipAdminServices;
     private final GetBlockAdminServices getBlockAdminServices;
     private final UserServiceApiClient userServiceApiClient;
+    private final NotificationService notificationService;
 
-    public ControlFriendRequestAdminServices(FriendRequestRepository friendRequestRepository, GetFriendRequestAdminServices getFriendRequestAdminServices, GetFriendshipAdminServices getFriendshipAdminServices, ControlFriendshipAdminServices controlFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices, UserServiceApiClient userServiceApiClient) {
+    public ControlFriendRequestAdminServices(FriendRequestRepository friendRequestRepository, GetFriendRequestAdminServices getFriendRequestAdminServices, GetFriendshipAdminServices getFriendshipAdminServices, ControlFriendshipAdminServices controlFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices, UserServiceApiClient userServiceApiClient, NotificationService notificationService) {
         this.friendRequestRepository = friendRequestRepository;
         this.getFriendRequestAdminServices = getFriendRequestAdminServices;
         this.getFriendshipAdminServices = getFriendshipAdminServices;
         this.controlFriendshipAdminServices = controlFriendshipAdminServices;
         this.getBlockAdminServices = getBlockAdminServices;
         this.userServiceApiClient = userServiceApiClient;
+        this.notificationService = notificationService;
     }
 
     public FriendRequest addNewFriendRequest(FriendRequestCreateRequest request) {
@@ -41,10 +45,10 @@ public class ControlFriendRequestAdminServices {
         if (request.senderId.trim().compareToIgnoreCase(request.receiverId.trim()) == 0) 
             throw new IllegalArgumentException("Invalid request");
 
-        if (userServiceApiClient.getUserById(request.senderId) != null) 
+        if (userServiceApiClient.getUserById(request.senderId) == null) 
             throw new IllegalArgumentException("Sender does not exists");
 
-        if (userServiceApiClient.getUserById(request.receiverId) != null) 
+        if (userServiceApiClient.getUserById(request.receiverId) == null) 
             throw new IllegalArgumentException("Receiver does not exists");
 
         if (existingFriendRequest.size() > 0) 
@@ -70,6 +74,10 @@ public class ControlFriendRequestAdminServices {
         newFriendRequest.setUpdatedDate(newFriendRequest.getCreatedDate());
 
         friendRequestRepository.save(newFriendRequest);
+
+        // notify
+        notificationService.sendFriendRequestToUser(newFriendRequest.getSenderId(), NotificationAction.CREATED, newFriendRequest);
+        notificationService.sendFriendRequestToUser(newFriendRequest.getReceiverId(), NotificationAction.CREATED, newFriendRequest);
 
         return newFriendRequest;
     }
@@ -102,8 +110,11 @@ public class ControlFriendRequestAdminServices {
 
         friendRequestRepository.save(friendRequest);
 
+        // notify
+        notificationService.sendFriendRequestToUser(friendRequest.getSenderId(), NotificationAction.UPDATED, friendRequest);
+        notificationService.sendFriendRequestToUser(friendRequest.getReceiverId(), NotificationAction.UPDATED, friendRequest);
+
         return friendRequest;
-        
     }
 
     public void deleteFriendRequest(String id) {
@@ -115,6 +126,13 @@ public class ControlFriendRequestAdminServices {
         if (friendRequest == null) 
             throw new IllegalArgumentException("Friend request not found");
 
+        String firstUserId = new String(friendRequest.getSenderId());
+        String secondUserId = new String(friendRequest.getReceiverId());
+
         friendRequestRepository.deleteById(id);
+
+        // notify
+        notificationService.sendFriendRequestToUser(firstUserId, NotificationAction.DELETED, friendRequest);
+        notificationService.sendFriendRequestToUser(secondUserId, NotificationAction.DELETED, friendRequest);
     }
 }

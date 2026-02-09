@@ -120,7 +120,7 @@ public class FriendshipAdminController {
             return ResponseEntity.ok().body("Friendship deleted successfully");
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e);
         }
     }
 }

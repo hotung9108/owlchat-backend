@@ -1,8 +1,9 @@
 package com.owl.chat_service.application.service.user.chat;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,8 @@ import com.owl.chat_service.application.service.admin.chat.ControlChatAdminServi
 import com.owl.chat_service.application.service.admin.chat.GetChatAdminServices;
 import com.owl.chat_service.application.service.admin.chat_member.ControlChatMemberAdminSerivces;
 import com.owl.chat_service.application.service.admin.chat_member.GetChatMemberAdminServices;
+import com.owl.chat_service.application.service.event.EventEmitter;
+import com.owl.chat_service.application.service.event.SystemMessageEvent;
 import com.owl.chat_service.application.service.notification.NotificationService;
 import com.owl.chat_service.domain.chat.service.ChatMemberServices;
 import com.owl.chat_service.domain.chat.validate.ChatValidate;
@@ -36,14 +39,15 @@ public class ControlChatUserServices {
     private final GetChatMemberAdminServices getChatMemberAdminServices;
     private final GetChatUserServices getChatUserServices;
     private final NotificationService notificationService;
-
+    private final EventEmitter eventEmitter;
+    
     public ControlChatUserServices(ControlChatAdminServices controlChatAdminServices,
             ControlChatMemberAdminSerivces controlChatMemberAdminSerivces,
             GetChatAdminServices getChatAdminServices,
             ChatRepository chatRepository,
             GetChatMemberAdminServices getChatMemberAdminServices,
             GetChatUserServices getChatUserServices,
-            NotificationService notificationService) {
+            NotificationService notificationService, EventEmitter eventEmitter) {
         this.controlChatAdminServices = controlChatAdminServices;
         this.controlChatMemberAdminSerivces = controlChatMemberAdminSerivces;
         this.getChatAdminServices = getChatAdminServices;
@@ -51,6 +55,7 @@ public class ControlChatUserServices {
         this.getChatMemberAdminServices = getChatMemberAdminServices;
         this.getChatUserServices = getChatUserServices;
         this.notificationService = notificationService;
+        this.eventEmitter = eventEmitter;
     }
 
     public Chat addNewChat(String requesterId, ChatUserRequest chatRequest) {
@@ -59,17 +64,20 @@ public class ControlChatUserServices {
         if (!chatRequest.chatMembersId.contains(requesterId))
             chatRequest.chatMembersId.add(requesterId);
 
-        if (chatRequest.chatMembersId.size() == 0)
+        chatRequest.chatMembersId = new ArrayList<>(new HashSet<>(chatRequest.chatMembersId));
+        
+        if (chatRequest.chatMembersId.size() == 0) 
             throw new IllegalArgumentException("Chat member list is empty");
+        else if (chatRequest.chatMembersId.size() == 1) {
+            throw new IllegalArgumentException("Chat members must aleast 2");
+        }
         else if (chatRequest.chatMembersId.size() == 2) {
             request.type = "PRIVATE";
 
-            Set<Chat> member1Chats = new HashSet<>(getChatUserServices
-                    .getChatsByMemberId(chatRequest.chatMembersId.get(0), null, -1, 0, true, "PRIVATE", null, null));
-            List<Chat> member2Chats = getChatUserServices.getChatsByMemberId(chatRequest.chatMembersId.get(1), null, -1,
-                    0, true, "PRIVATE", null, null);
-
-            for (Chat chat : member2Chats) {
+            List<String> member1Chats = getChatUserServices.getChatsByMemberId(chatRequest.chatMembersId.get(0), null, -1, 0, true, "PRIVATE", null, null).stream().map(Chat::getId).collect(Collectors.toList());
+            List<String> member2Chats = getChatUserServices.getChatsByMemberId(chatRequest.chatMembersId.get(1), null, -1, 0, true, "PRIVATE", null, null).stream().map(Chat::getId).collect(Collectors.toList());
+            
+            for (String chat : member2Chats) {
                 if (member1Chats.contains(chat)) {
                     throw new IllegalArgumentException("Private chat already exists");
                 }
@@ -90,7 +98,15 @@ public class ControlChatUserServices {
         chatMemberRequester.chatId = newChat.getId();
         chatMemberRequester.role = "OWNER";
         chatMemberRequester.inviterId = null;
-        controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequester);
+
+        try {
+            controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequester);
+        }
+        catch (Exception e) {
+            controlChatAdminServices.deleteChat(newChat.getId());
+
+            throw e;
+        }
 
         for (String memberId : chatRequest.chatMembersId) {
             ChatMemberAdminRequest chatMemberRequest = new ChatMemberAdminRequest();
@@ -104,20 +120,32 @@ public class ControlChatUserServices {
             else
                 chatMemberRequest.role = "MEMBER";
 
-            controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequest);
+            try {
+                controlChatMemberAdminSerivces.addNewChatMember(chatMemberRequest);
+            }
+            catch (Exception e) {
+                controlChatAdminServices.deleteChat(newChat.getId());
 
-            // Gui notification khi them thanh vien vao chat
-            // NotificationDto<Chat> notification = new NotificationDto<>(
-            // NotificationType.CHAT,
-            // NotificationAction.CREATED,
-            // newChat);
-            // notificationService.send(memberId, notification);
+                throw e;
+            }
         }
+
+        // Gui notification khi them thanh vien vao chat
+        // NotificationDto<Chat> notification = new NotificationDto<>(
+        // NotificationType.CHAT,
+        // NotificationAction.CREATED,
+        // newChat);
+        // notificationService.send(memberId, notification);
         NotificationDto<Chat> notification = new NotificationDto<>(
                 NotificationType.CHAT,
                 NotificationAction.CREATED,
                 newChat);
         notificationService.sendToChat(newChat.getId(), notification);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(newChat.getId());
+        event.setContent("Chat has been created");
+        eventEmitter.emit(event);
 
         return newChat;
     }
@@ -157,6 +185,12 @@ public class ControlChatUserServices {
                 NotificationAction.UPDATED,
                 updatedChat);
         notificationService.sendToChat(chatId, notification);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chat.getId());
+        event.setContent("Chat name has been updated to " + chat.getName());
+        eventEmitter.emit(event);
+
         return updatedChat;
         // return chatRepository.save(chat);
     }
@@ -186,6 +220,11 @@ public class ControlChatUserServices {
                 NotificationAction.DELETED,
                 chatId);
         notificationService.sendToChat(chatId, notification);
+
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chatId);
+        event.setContent("Chat name has been deleted");
+        eventEmitter.emit(event);
     }
 
     public void updateChatAvatarFile(String requesterId, String chatId, MultipartFile file) {
@@ -214,5 +253,9 @@ public class ControlChatUserServices {
                 chatId);
         notificationService.sendToChat(chatId, notification);
 
+        SystemMessageEvent event = new SystemMessageEvent();
+        event.setChatId(chatId);
+        event.setContent("Chat avatar has been updated");
+        eventEmitter.emit(event);
     }
 }

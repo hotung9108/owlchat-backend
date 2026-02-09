@@ -1,13 +1,19 @@
 package com.owl.social_service.application.admin;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.owl.social_service.application.event.CreateFriendshipEvent;
+import com.owl.social_service.application.event.EventEmitter;
+import com.owl.social_service.application.notification.NotificationService;
+import com.owl.social_service.application.notification.dto.NotificationDto.NotificationAction;
 import com.owl.social_service.domain.validate.FriendshipValidate;
 import com.owl.social_service.external_service.client.UserServiceApiClient;
+import com.owl.social_service.external_service.dto.ChatCreateRequestDto;
 import com.owl.social_service.persistence.mongodb.document.Friendship;
 import com.owl.social_service.persistence.mongodb.repository.FriendshipRepository;
 import com.owl.social_service.presentation.dto.FriendshipCreateRequest;
@@ -19,12 +25,16 @@ public class ControlFriendshipAdminServices {
     private final GetFriendshipAdminServices getFriendshipAdminServices;
     private final GetBlockAdminServices getBlockAdminServices;
     private final UserServiceApiClient userServiceApiClient;
+    private final NotificationService notificationService;
+    private final EventEmitter emitter;
 
-    public ControlFriendshipAdminServices(FriendshipRepository friendshipRepository, GetFriendshipAdminServices getFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices, UserServiceApiClient userServiceApiClient) {
+    public ControlFriendshipAdminServices(FriendshipRepository friendshipRepository, GetFriendshipAdminServices getFriendshipAdminServices, GetBlockAdminServices getBlockAdminServices, UserServiceApiClient userServiceApiClient, NotificationService notificationService, EventEmitter emitter) {
         this.friendshipRepository = friendshipRepository;
         this.getFriendshipAdminServices = getFriendshipAdminServices;
         this.getBlockAdminServices = getBlockAdminServices;
-        this.userServiceApiClient = userServiceApiClient;}
+        this.userServiceApiClient = userServiceApiClient;
+        this.notificationService = notificationService;
+        this.emitter = emitter;}
 
     public Friendship addNewFriendship(FriendshipCreateRequest request) {
         if (!FriendshipValidate.validateUserId(request.firstUserId))
@@ -33,7 +43,7 @@ public class ControlFriendshipAdminServices {
         if (!FriendshipValidate.validateUserId(request.secondUserId))
             throw new IllegalArgumentException("Invalid second user id");
 
-        if (userServiceApiClient.getUserById(request.firstUserId) != null || userServiceApiClient.getUserById(request.secondUserId) != null) 
+        if (userServiceApiClient.getUserById(request.firstUserId) == null || userServiceApiClient.getUserById(request.secondUserId) == null) 
             throw new IllegalArgumentException("One of the users does not exists");
 
         if (getFriendshipAdminServices.getFriendshipByUsersId(request.firstUserId, request.secondUserId) != null) 
@@ -53,6 +63,21 @@ public class ControlFriendshipAdminServices {
 
         friendshipRepository.save(newFriendship);
 
+        // notify
+        notificationService.sendFriendshipToUser(newFriendship.getFirstUserId(), NotificationAction.CREATED, newFriendship);
+        notificationService.sendFriendshipToUser(newFriendship.getSecondUserId(), NotificationAction.CREATED, newFriendship);
+
+        // create chat
+        ChatCreateRequestDto chatCreateRequestDto = new ChatCreateRequestDto();
+        chatCreateRequestDto.name = "PRIVATE CHAT";
+        chatCreateRequestDto.chatMembersId = new ArrayList<String>();
+        chatCreateRequestDto.chatMembersId.add(newFriendship.getFirstUserId());
+        chatCreateRequestDto.chatMembersId.add(newFriendship.getSecondUserId());
+
+        CreateFriendshipEvent event = new CreateFriendshipEvent("CREATE FRIENDSHIP", newFriendship.getFirstUserId(), chatCreateRequestDto);
+
+        emitter.emit(event);
+
         return newFriendship;
     }
 
@@ -63,6 +88,15 @@ public class ControlFriendshipAdminServices {
         if (getFriendshipAdminServices.getFriendshipById(id) == null) 
             throw new IllegalArgumentException("Friendship does not exists");
 
+        Friendship existingFriendship = new Friendship();
+
+        String firstUserId = new String(existingFriendship.getFirstUserId());
+        String secondUserId = new String(existingFriendship.getSecondUserId());
+
         friendshipRepository.deleteById(id);
+
+        // notify
+        notificationService.sendFriendshipToUser(firstUserId, NotificationAction.DELETED, existingFriendship);
+        notificationService.sendFriendshipToUser(secondUserId, NotificationAction.DELETED, existingFriendship);
     }
 }
