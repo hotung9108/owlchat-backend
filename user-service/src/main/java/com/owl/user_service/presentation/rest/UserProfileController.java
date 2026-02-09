@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -63,6 +64,17 @@ public class UserProfileController {
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{id}")
     public ResponseEntity<?> getProfileById(@PathVariable String id) {
+        try 
+        {
+            return ResponseEntity.ok(getUserProfileService.getUserProfileById(id));    
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @Operation(security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserProfile(@RequestHeader("X-Account-Id") String id) {
         try 
         {
             return ResponseEntity.ok(getUserProfileService.getUserProfileById(id));    
