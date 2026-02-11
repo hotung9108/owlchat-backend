@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 
-
 @RestController
 @RequestMapping("/message")
 public class MessageUserController {
@@ -41,114 +40,132 @@ public class MessageUserController {
     private final ControlMessageUserServices controlMessageUserServices;
     private final GetMessageUserServices getMessageUserServices;
 
-    public MessageUserController(GetMessageUserServices getMessageUserServices, ControlMessageUserServices controlMessageUserServices) {
+    public MessageUserController(GetMessageUserServices getMessageUserServices,
+            ControlMessageUserServices controlMessageUserServices) {
         this.getMessageUserServices = getMessageUserServices;
         this.controlMessageUserServices = controlMessageUserServices;
     }
 
     // get messages by chat id
-        // requester id
-        // chat id
-        // keywords
-        // page
-        // size
-        // ascSort
-        // type
-        // sender id
-        // sentDateStart
-        // sentDateEnd
+    // requester id
+    // chat id
+    // keywords
+    // page
+    // size
+    // ascSort
+    // type
+    // sender id
+    // sentDateStart
+    // sentDateEnd
     @GetMapping("/chat/{chatId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?>  getMessagesByChatId(
-        @RequestHeader String requesterId,
-        @PathVariable String chatId,
-        @RequestParam(required = false, defaultValue = "") String keywords,
-        @RequestParam(required = false, defaultValue = "0") int page,
-        @RequestParam(required = false, defaultValue = "10") int size,
-        @RequestParam(required = false, defaultValue = "true") boolean ascSort,
-        @RequestParam(required = false, defaultValue = "ALL") String type,
-        @RequestParam(required = false, defaultValue = "") String senderId,
-        @RequestParam(required = false) Instant sentDateStart,
-        @RequestParam(required = false) Instant sentDateEnd 
-    ) 
-    {
+    public ResponseEntity<?> getMessagesByChatId(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String chatId,
+            @RequestParam(required = false, defaultValue = "") String keywords,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false, defaultValue = "true") boolean ascSort,
+            @RequestParam(required = false, defaultValue = "ALL") String type,
+            @RequestParam(required = false, defaultValue = "") String senderId,
+            @RequestParam(required = false) Instant sentDateStart,
+            @RequestParam(required = false) Instant sentDateEnd) {
         try {
-            return ResponseEntity.ok().body(getMessageUserServices.getMessagesByChatId(requesterId, chatId, keywords, page, size, ascSort, type, senderId, sentDateStart, sentDateEnd));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(getMessageUserServices.getMessagesByChatId(finalRequesterId, chatId, keywords,
+                            page, size, ascSort, type, senderId, sentDateStart, sentDateEnd));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
 
     // get message by id
-        // requester id
-        // message id
+    // requester id
+    // message id
     @GetMapping("/{messageId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> getMessageById(@RequestHeader String requesterId, @PathVariable String messageId) {
+    public ResponseEntity<?> getMessageById(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String messageId) {
         try {
-            return ResponseEntity.ok().body(getMessageUserServices.getMessageById(requesterId, messageId));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity.ok().body(getMessageUserServices.getMessageById(finalRequesterId, messageId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
+
     // get message file by id
-        // requester id
-        // message id
+    // requester id
+    // message id
     @GetMapping("/{messageId}/resource")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> getMessageFile(@RequestHeader String requesterId, @PathVariable String messageId) {
+    public ResponseEntity<?> getMessageFile(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String messageId) {
         try {
-            ResourceData data = getMessageUserServices.getMessageFile(requesterId, messageId);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
 
+            ResourceData data = getMessageUserServices.getMessageFile(finalRequesterId, messageId);
             String mediaType = data.contentType /* avatar mediaType */;
-            
             Objects.requireNonNull(mediaType, "mediaType must not be null");
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(mediaType))
                     .body(data.resource /* avatar resource */);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // post new text message
-        // requester id
-        // message create request
-            // chat id
-            // content
+    // requester id
+    // message create request
+    // chat id
+    // content
     @PostMapping("")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> postNewTextMessage(@RequestHeader String requesterId, @RequestBody TextMessageUserRequest textMessageRequest) {
+    public ResponseEntity<?> postNewTextMessage(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestBody TextMessageUserRequest textMessageRequest) {
         try {
-            return ResponseEntity.ok().body(controlMessageUserServices.addNewTextMessage(requesterId, textMessageRequest));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+            return ResponseEntity.ok()
+                    .body(controlMessageUserServices.addNewTextMessage(finalRequesterId, textMessageRequest));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // post new file message
-        // requester id
-        // chat id
-        // type
-        // file
+    // requester id
+    // chat id
+    // type
+    // file
     @PostMapping(value = "/resource/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> postNewFileMessage(@RequestHeader String requesterId,  @RequestHeader String chatId, @RequestHeader String type, @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<?> postNewFileMessage(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @RequestHeader String chatId,
+            @RequestHeader String type,
+            @RequestPart("file") MultipartFile file) {
         try {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
             FileMessageUserRequest fileMessageRequest = new FileMessageAdminRequest();
             fileMessageRequest.chatId = chatId;
             fileMessageRequest.type = type;
             fileMessageRequest.file = file;
-            return ResponseEntity.ok().body(controlMessageUserServices.addNewFileMessage(requesterId, fileMessageRequest));
-        }
-        catch (Exception e) {
+            return ResponseEntity.ok()
+                    .body(controlMessageUserServices.addNewFileMessage(finalRequesterId, fileMessageRequest));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -158,33 +175,43 @@ public class MessageUserController {
     public ResponseEntity<?> handleMaxSize(MaxUploadSizeExceededException e) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File size exceeds 10MB limit");
     }
-    
+
     // put edit text message
-        // requester id
-        // message id
-        // content
+    // requester id
+    // message id
+    // content
     @PutMapping("/{messageId}/edit")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> putTextMessage(@RequestHeader String requesterId, @PathVariable String messageId, @RequestBody MessageUpdateContentRequest content) {
+    public ResponseEntity<?> putTextMessage(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String messageId,
+            @RequestBody MessageUpdateContentRequest content) {
         try {
-            return ResponseEntity.ok(controlMessageUserServices.editTextMessage(requesterId, messageId, content.content));
-        }
-        catch (Exception e) {
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            return ResponseEntity
+                    .ok(controlMessageUserServices.editTextMessage(finalRequesterId, messageId, content.content));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // soft delete message
-        // requester id
-        // message id
+    // requester id
+    // message id
     @DeleteMapping("/{messageId}")
     @Operation(security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> softDeleteMessage(@RequestHeader String requesterId, @PathVariable String messageId) {
+    public ResponseEntity<?> softDeleteMessage(
+            @RequestHeader(value = "X-Account-Id", required = false) String accountId,
+            @RequestParam(required = false) String requesterId,
+            @PathVariable String messageId) {
         try {
-            controlMessageUserServices.softDeleteMessage(requesterId, messageId);
+            String finalRequesterId = (requesterId != null) ? requesterId : accountId;
+
+            controlMessageUserServices.softDeleteMessage(finalRequesterId, messageId);
             return ResponseEntity.ok().body("Message removed successfully");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

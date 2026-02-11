@@ -6,27 +6,30 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import com.owl.user_service.application.service.auth.ControlAuthService;
+import com.owl.user_service.application.service.user_profile.ControlUserProfileServices;
 import com.owl.user_service.presentation.dto.request.auth.AuthRequest;
 import com.owl.user_service.presentation.dto.request.auth.AuthResponse;
 import com.owl.user_service.presentation.dto.request.auth.RefreshTokenRequest;
+import com.owl.user_service.presentation.dto.request.auth.SignUpRequest;
 
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(
-    origins = "http://localhost:8080",
-    allowedHeaders = "*",
-    methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
-    allowCredentials = "true"
-)
+// @CrossOrigin(
+//     origins = "http://localhost:8080",
+//     allowedHeaders = "*",
+//     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE},
+//     allowCredentials = "true"
+// )
 public class AuthController {
 
     private final ControlAuthService controlAuthService;
+    private final ControlUserProfileServices controlUserProfileServices;
 
-    public AuthController(ControlAuthService controlAuthService) {
+    public AuthController(ControlAuthService controlAuthService, ControlUserProfileServices controlUserProfileServices) {
         this.controlAuthService = controlAuthService;
+        this.controlUserProfileServices = controlUserProfileServices;
     }
     // @Operation(summary = "Login", security = {})
     @PostMapping("/login")
@@ -64,6 +67,16 @@ public class AuthController {
         }
 
         // return ResponseEntity.ok("Logged out successfully");
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> Login(@RequestBody SignUpRequest request) {
+        try {
+            return ResponseEntity.ok(controlUserProfileServices.SignUp(request));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e);
+        }
     }
 
     // @GetMapping

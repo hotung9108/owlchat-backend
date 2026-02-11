@@ -1,88 +1,102 @@
 version: "3.9"
 
 services:
-  api-gateway:
-    build: 
-      context: ./api-gateway
-      dockerfile: Dockerfile.api-gateway
-    container_name: api-gateway
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-    depends_on:
-      - user-service
-      - chat-service
-      - social-service
-    networks:
-      - owl-network
+    api-gateway:
+        build:
+            context: ./api-gateway
+            dockerfile: Dockerfile.api-gateway
+        container_name: api-gateway
+        ports:
+            - "8080:8080"
+        environment:
+            SPRING_PROFILES_ACTIVE: docker
+        depends_on:
+            - user-service
+            - chat-service
+            - social-service
+        networks:
+            - owl-network
 
-  user-service:
-    build: 
-      context: ./user-service
-      dockerfile: Dockerfile.user-service
-    container_name: user-service
-    ports:
-      - "8081:8081"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-    networks:
-      - owl-network
+    user-service:
+        build:
+            context: ./user-service
+            dockerfile: Dockerfile.user-service
+        container_name: user-service
+        ports:
+            - "8081:8081"
+        environment:
+            SPRING_PROFILES_ACTIVE: docker
+        networks:
+            - owl-network
 
-  chat-service:
-    build: 
-      context: ./chat-service
-      dockerfile: Dockerfile.chat-service
-    container_name: chat-service
-    ports:
-      - "8082:8082"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
-      # SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/social_db
+    chat-service:
+        build:
+            context: ./chat-service
+            dockerfile: Dockerfile.chat-service
+        container_name: chat-service
+        ports:
+            - "8082:8082"
+        environment:
+            SPRING_PROFILES_ACTIVE: docker
+            SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
+            # SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/social_db
 
-    depends_on:
-      - chat-mongo
-    networks:
-      - owl-network
+        depends_on:
+            - chat-mongo
+        networks:
+            - owl-network
 
-  chat-mongo:
-    image: mongo:7
-    container_name: chat-mongo
-    ports:
-      - "27018:27017"
-    volumes:
-      - chat-mongo-data:/data/db
-    networks:
-      - owl-network
+    chat-mongo:
+        image: mongo:7
+        container_name: chat-mongo
+        ports:
+            - "27018:27017"
+        volumes:
+            - chat-mongo-data:/data/db
+        networks:
+            - owl-network
 
-  social-service:
-    build: 
-      context: ./social-service
-      dockerfile: Dockerfile.social-service
-    container_name: social-service
-    ports:
-      - "8083:8083"
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
-    depends_on:
-      # - social-mongo
-      - chat-mongo
-    networks:
-      - owl-network
+    social-service:
+        build:
+            context: ./social-service
+            dockerfile: Dockerfile.social-service
+        container_name: social-service
+        ports:
+            - "8083:8083"
+        environment:
+            SPRING_PROFILES_ACTIVE: docker
+            SPRING_DATA_MONGODB_URI: mongodb://chat-mongo:27017/chat_db
+        depends_on:
+            # - social-mongo
+            - chat-mongo
+        networks:
+            - owl-network
+    user-postgres:
+        image: postgres:15
+        container_name: user-postgres
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_DB: user_db
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: password
+        volumes:
+            - user-postgres-data:/var/lib/postgresql/data
+        networks:
+            - owl-network
 
-  # social-mongo:
-  #   image: mongo:7
-  #   container_name: social-mongo
-  #   ports:
-  #     - "27019:27017"
-  #   volumes:
-  #     - social-mongo-data:/data/db
+    # social-mongo:
+    #   image: mongo:7
+    #   container_name: social-mongo
+    #   ports:
+    #     - "27019:27017"
+    #   volumes:
+    #     - social-mongo-data:/data/db
 
 networks:
-  owl-network:
-    driver: bridge
+    owl-network:
+        driver: bridge
 volumes:
-  chat-mongo-data:
-  # social-mongo-data:
+    chat-mongo-data:
+    user-postgres-data:
+    # social-mongo-data:

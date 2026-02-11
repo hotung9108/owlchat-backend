@@ -5,7 +5,9 @@ import com.owl.user_service.domain.service.RefreshTokenService;
 import com.owl.user_service.infrastructure.utils.JwtUtil;
 import com.owl.user_service.persistence.jpa.entity.Account;
 import com.owl.user_service.persistence.jpa.entity.RefreshToken;
+import com.owl.user_service.persistence.jpa.entity.UserProfile;
 import com.owl.user_service.persistence.jpa.repository.AccountJpaRepository;
+import com.owl.user_service.persistence.jpa.repository.UserProfileJpaRepository;
 // import com.owl.user_service.domain.service.AccountServices;
 import com.owl.user_service.domain.service.AuthService;
 
@@ -25,19 +27,29 @@ public class ControlAuthService {
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
     private final AccountJpaRepository accountJpaRepository;
+    private final UserProfileJpaRepository userProfileJpaRepository;
 
     public ControlAuthService(AuthService authService, RefreshTokenService refreshTokenService,
-            AccountJpaRepository accountJpaRepository) {
+            AccountJpaRepository accountJpaRepository, UserProfileJpaRepository userProfileJpaRepository) {
         this.authService = authService;
         this.refreshTokenService = refreshTokenService;
         this.accountJpaRepository = accountJpaRepository;
+        this.userProfileJpaRepository = userProfileJpaRepository;
 
     }
 
     public AuthResponse login(AuthRequest authRequest) {
         Account account = accountJpaRepository.findByUsername(authRequest.getUsername());
         if (account == null) {
-            throw new IllegalArgumentException("Account not found");
+            UserProfile userProfile = userProfileJpaRepository.findByEmail(authRequest.getUsername());
+            
+            if (userProfile == null)
+                throw new IllegalArgumentException("Account not found");
+            
+            account = userProfile.getAccount();
+
+            if (account == null)
+                throw new IllegalArgumentException("Account not found");
         }
         if (!authService.verifyPassword(authRequest.getPassword(), account.getPassword())) {
             throw new IllegalArgumentException("Invalid password");
