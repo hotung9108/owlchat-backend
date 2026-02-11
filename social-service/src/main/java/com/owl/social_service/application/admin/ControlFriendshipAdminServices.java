@@ -76,7 +76,12 @@ public class ControlFriendshipAdminServices {
 
         CreateFriendshipEvent event = new CreateFriendshipEvent("CREATE FRIENDSHIP", newFriendship.getFirstUserId(), chatCreateRequestDto);
 
-        emitter.emit(event);
+        try {
+            emitter.emit(event);
+        }
+        catch (Exception e) {
+            
+        }
 
         return newFriendship;
     }
@@ -88,7 +93,7 @@ public class ControlFriendshipAdminServices {
         if (getFriendshipAdminServices.getFriendshipById(id) == null) 
             throw new IllegalArgumentException("Friendship does not exists");
 
-        Friendship existingFriendship = new Friendship();
+        Friendship existingFriendship = getFriendshipAdminServices.getFriendshipById(id);
 
         String firstUserId = new String(existingFriendship.getFirstUserId());
         String secondUserId = new String(existingFriendship.getSecondUserId());
