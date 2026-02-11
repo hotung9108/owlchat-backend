@@ -12,8 +12,12 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 public class GatewayTrustHandshakeInterceptor implements HandshakeInterceptor {
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
+    public boolean beforeHandshake(
+            ServerHttpRequest request,
+            ServerHttpResponse response,
+            WebSocketHandler wsHandler,
             Map<String, Object> attributes) {
+                
         String accountId = request.getHeaders().getFirst("X-Account-Id");
         // if (accountId == null) {
         // return false;

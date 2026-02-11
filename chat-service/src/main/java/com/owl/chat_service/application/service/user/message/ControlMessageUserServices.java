@@ -55,12 +55,12 @@ public class ControlMessageUserServices {
         Message newMessage = controlMessageAdminServices.addNewTextMessage(request);
 
         // Gui thong bao khi them tin nhan moi
-        NotificationDto<Message> notification = new NotificationDto<>(
-                NotificationType.MESSAGE,
-                NotificationAction.CREATED,
-                newMessage);
-        notificationService.sendToChat(textMessageRequest.chatId, notification);
-        notificationService.sendMessageToChat(textMessageRequest.chatId, notification);
+        // NotificationDto<Message> notification = new NotificationDto<>(
+        //         NotificationType.MESSAGE,
+        //         NotificationAction.CREATED,
+        //         newMessage);
+        // notificationService.sendToChat(textMessageRequest.chatId, notification);
+        // notificationService.sendMessageToChat(textMessageRequest.chatId, notification);
 
         return newMessage;
     }
@@ -78,12 +78,12 @@ public class ControlMessageUserServices {
         // Gui thong bao khi edit tin nhan
         Message updatedMessage = controlMessageAdminServices.editTextMessage(messageId, content);
 
-        NotificationDto<Message> notification = new NotificationDto<>(
-                NotificationType.MESSAGE,
-                NotificationAction.UPDATED,
-                updatedMessage);
-        notificationService.sendToChat(updatedMessage.getChatId(), notification);
-        notificationService.sendMessageToChat(updatedMessage.getChatId(), notification);
+        // NotificationDto<Message> notification = new NotificationDto<>(
+        //         NotificationType.MESSAGE,
+        //         NotificationAction.UPDATED,
+        //         updatedMessage);
+        // notificationService.sendToChat(updatedMessage.getChatId(), notification);
+        // notificationService.sendMessageToChat(updatedMessage.getChatId(), notification);
         return updatedMessage;  
     }
 
@@ -98,12 +98,12 @@ public class ControlMessageUserServices {
 
         controlMessageAdminServices.softDeleteMessage(messageId);
         // Gui thong bao xoa tin nhan
-        NotificationDto<Message> notification = new NotificationDto<>(
-                NotificationType.MESSAGE,
-                NotificationAction.DELETED,
-                existingMessage);
-        notificationService.sendToChat(existingMessage.getChatId(), notification);
-        notificationService.sendMessageToChat(existingMessage.getChatId(), notification);
+        // NotificationDto<Message> notification = new NotificationDto<>(
+        //         NotificationType.MESSAGE,
+        //         NotificationAction.DELETED,
+        //         existingMessage);
+        // notificationService.sendToChat(existingMessage.getChatId(), notification);
+        // notificationService.sendMessageToChat(existingMessage.getChatId(), notification);
 
     }
 

@@ -138,7 +138,7 @@ public class ControlMessageAdminServices {
                 NotificationAction.CREATED,
                 newMessage);
         notificationService.sendToChat(textMessageRequest.chatId, message);
-        notificationService.sendMessageToChat(textMessageRequest.chatId, message);
+        // notificationService.sendMessageToChat(textMessageRequest.chatId, message);
 
         return newMessage;
     }
@@ -201,7 +201,7 @@ public class ControlMessageAdminServices {
                 NotificationAction.UPDATED,
                 newMessage);
         notificationService.sendToChat(newMessage.getChatId(), message);
-        notificationService.sendMessageToChat(newMessage.getChatId(), message);
+        // notificationService.sendMessageToChat(newMessage.getChatId(), message);
         return newMessage;
     }
 
@@ -289,7 +289,7 @@ public class ControlMessageAdminServices {
                 NotificationAction.DELETED,
                 existingMessage);
         notificationService.sendToChat(existingMessage.getChatId(), message);
-        notificationService.sendMessageToChat(existingMessage.getChatId(), message);
+        // notificationService.sendMessageToChat(existingMessage.getChatId(), message);
     }
 
     public void hardDeleteMessage(String messageId) {
@@ -310,7 +310,7 @@ public class ControlMessageAdminServices {
                 NotificationAction.DELETED,
                 existingMessage);
         notificationService.sendToChat(existingMessage.getChatId(), notification);
-        notificationService.sendMessageToChat(existingMessage.getChatId(), notification);
+        // notificationService.sendMessageToChat(existingMessage.getChatId(), notification);
     }
 
     public Message addNewFileMessage(FileMessageAdminRequest fileMessageRequest) {
@@ -388,7 +388,7 @@ public class ControlMessageAdminServices {
                 NotificationAction.CREATED,
                 newMessage);
         notificationService.sendToChat(fileMessageRequest.chatId, notification);
-        notificationService.sendMessageToChat(fileMessageRequest.chatId, notification);
+        // notificationService.sendMessageToChat(fileMessageRequest.chatId, notification);
         return newMessage;
     }
 

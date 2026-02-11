@@ -11,8 +11,7 @@ import com.owl.user_service.presentation.dto.request.auth.AuthRequest;
 import com.owl.user_service.presentation.dto.request.auth.AuthResponse;
 import com.owl.user_service.presentation.dto.request.auth.RefreshTokenRequest;
 import com.owl.user_service.presentation.dto.request.auth.SignUpRequest;
-
-
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/auth")
@@ -58,15 +57,12 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
-        // controlAuthService.logout(refreshToken);
         try {
             controlAuthService.logout(refreshToken);
-            return ResponseEntity.ok("Logged out successfully");
+            return ResponseEntity.ok(Collections.singletonMap("message", "Logged out successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e);
         }
-
-        // return ResponseEntity.ok("Logged out successfully");
     }
 
     @PostMapping("/signup")
